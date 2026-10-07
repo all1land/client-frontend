@@ -1,4 +1,4 @@
-name: CI
+name: vue-build-pages
 
 on:
   push:
