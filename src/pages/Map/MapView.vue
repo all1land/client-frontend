@@ -1,5 +1,8 @@
 <template>
   <div class="map-view">
+
+    <MapSidePannel />
+
     <MapTypeControl
       :current-map-type="currentMapType"
       @change-map-type="changeMapType"
