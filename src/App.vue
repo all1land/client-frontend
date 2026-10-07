@@ -3,21 +3,22 @@
     <v-navigation-drawer
       v-if="shouldShowSideNav"
       app
-      width="280"
+      permanent
+      rail
+      rail-width="64"
       color="#FFFFFF"
       class="side-nav-drawer"
     >
       <v-col cols="auto" class="pl-5 | side-nav-header">
-        <!-- <v-img
+        <v-img
           src="@/assets/title.png"
           alt="TryAngle Logo"
-          contain width="200"
+          contain width="64" 
           @click="handleClickBtn('goToHome')"
-        /> -->
-        study
+        />
       </v-col>
 
-      <v-divider />
+      <v-divider class="pa-0" />
 
       <v-list nav density="comfortable" class="side-nav-list">
         <SideNavItem
@@ -79,12 +80,12 @@
                 <v-col cols="12" class="justify-start">
                   <v-btn
                     variant="text"
-                    color="#FB2C36" class="menu-btn | red-text | border-radius-bottom"
+                    color="#FB2C2C" class="menu-btn | red-text | border-radius-bottom"
                     @click="handleClickBtn('logout')"
                     block
                   >
                     <template v-slot:prepend>
-                      <v-icon color="#FB2C36" size="large" icon="mdi-logout" class="ml-1"/>
+                      <v-icon color="#FB2C2C" size="large" icon="mdi-logout" class="ml-1"/>
                       <v-col>로그아웃</v-col>
                     </template>
                   </v-btn>
@@ -147,12 +148,12 @@
                 <v-col cols="12" class="justify-start">
                   <v-btn
                     variant="text"
-                    color="#FB2C36" class="menu-btn | red-text | border-radius-bottom"
+                    color="#FB2C2C" class="menu-btn | red-text | border-radius-bottom"
                     @click="handleClickBtn('logout')"
                     block
                   >
                     <template v-slot:prepend>
-                      <v-icon color="#FB2C36" size="large" icon="mdi-logout" class="ml-1"/>
+                      <v-icon color="#FB2C2C" size="large" icon="mdi-logout" class="ml-1"/>
                       <v-col>로그아웃</v-col>
                     </template>
                   </v-btn>
@@ -227,14 +228,22 @@ const pageList = ref([
     name: '데이터 플랫폼',
     child: [
       {
-        page: 'MapView',
-        name: '지도',
+        page: 'MapHome',
+        name: '지도 홈',
+        icon: 'mdi-map',
         path: '/map',
       },
       {
-        page: 'ParkingLotList',
-        name: '주차장 목록',
-        path: '/parking',
+        page: 'MapDirections',
+        name: '길찾기',
+        icon: 'mdi-parking',
+        path: '/map/directions',
+      },
+      {
+        page: 'UserSettings',
+        name: '더보기',
+        icon: 'mdi-dots-horizontal',
+        path: '/map/settings',
       },
     ],
   },
@@ -454,16 +463,16 @@ function openDialog(title, text, onConfirm, isOneBtn, okText) {
 .side-nav-header {
   height: 64px;
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
 .side-nav-list {
-  padding: 12px 16px;
+  padding: 0px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 /* 네비게이션 바 스타일 */
@@ -517,7 +526,7 @@ function openDialog(title, text, onConfirm, isOneBtn, okText) {
   border-radius: 0px 0px 16px 16px;
 }
 .red-text {
-  color: #FB2C36;
+  color: #FB2C2C;
 }
 
 

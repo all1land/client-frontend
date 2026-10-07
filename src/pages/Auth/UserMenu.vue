@@ -46,11 +46,11 @@
           variant="outlined" class="menu-btn | red-text | border-radius-bottom" block
         >
           <template v-slot:prepend>
-            <v-icon color="#FB2C36" size="large" icon="$cus-logout" class="ml-1"/>
+            <v-icon color="#FB2C2C" size="large" icon="$cus-logout" class="ml-1"/>
             <v-col>로그아웃</v-col>
           </template>
           <template v-slot:append>
-            <v-icon color="#FB2C36" size="large" icon="mdi-chevron-right" class="ml-1"/>
+            <v-icon color="#FB2C2C" size="large" icon="mdi-chevron-right" class="ml-1"/>
           </template>
         </v-btn>
       </v-row>
@@ -69,7 +69,7 @@
 
       <v-card-title>
         <v-row no-gutters class="align-center | justify-center">
-          <v-icon size="64" color="#2B7FFF" icon="$cus-complete"/>
+          <v-icon size="64" color="#127AB7" icon="$cus-complete"/>
         </v-row>
         <v-row no-gutters class="align-center | justify-center | mt-3"
           style="color: #101828; font-size: 20px; font-weight: 400; letter-spacing: -0.45px;"
@@ -228,7 +228,7 @@ function openDialog(title, text, onConfirm, isOneBtn, okText) {
 }
 
 .red-text {
-  color: #FB2C36;
+  color: #FB2C2C;
 }
 
 .btn-top-radius {

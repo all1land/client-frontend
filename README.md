@@ -29,7 +29,7 @@
 <!-- 프로젝트 소개 -->
 ## 프로젝트 소개
 
-open layers 라이브러리 사전 검토를 위해 생성한 목업 페이지
+차선책 클라이언트 화면
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

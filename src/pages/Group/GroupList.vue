@@ -274,7 +274,7 @@ function handleClickBtn(action, value) {
 
 .status-chip-applied {
     background-color: #E6F0FF !important;
-    color: #2B7FFF !important;
+    color: #127AB7 !important;
 }
 
 .status-chip-completed {

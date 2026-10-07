@@ -1,18 +1,7 @@
 <template>
   <div>
-    <div
-      v-if="isLabelOnly"
-      class="side-nav-label"
-      :style="{ '--side-nav-level': level }"
-    >
-      <div class="side-nav-item__content">
-        <span class="side-nav-item__title">{{ item.name }}</span>
-      </div>
-    </div>
-
     <v-list-item
-      v-else
-      rounded="lg"
+      v-if="!isLabelOnly"
       :class="[
         'side-nav-item',
         {
@@ -20,21 +9,28 @@
           'side-nav-item--branch': !isCurrentPage && isActiveBranch,
         },
       ]"
-      :style="{ '--side-nav-level': level }"
       @click="handleItemClick"
     >
       <div class="side-nav-item__content">
-        <span class="side-nav-item__title">{{ item.name }}</span>
+        <v-icon
+          v-if="item.icon"
+          :icon="item.icon"
+          size="28"
+        />
       </div>
+      <span v-if="item.name" class="side-nav-item__text">{{ item.name }}</span>
+
     </v-list-item>
 
-    <div v-if="hasChildren" class="side-nav-children">
+    <div
+      v-if="hasChildren"
+      class="side-nav-children"
+    >
       <SideNavItem
         v-for="child in item.child"
         :key="child.path || child.name"
         :item="child"
         :current-path="currentPath"
-        :level="level + 1"
       />
     </div>
   </div>
@@ -50,54 +46,99 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+
   currentPath: {
     type: String,
     required: true,
-  },
-  level: {
-    type: Number,
-    default: 0,
   },
 });
 
 const router = useRouter();
 
-const hasChildren = computed(() => Array.isArray(props.item.child) && props.item.child.length > 0);
-const isLabelOnly = computed(() => props.level === 0 && hasChildren.value && !props.item.path);
-const isCurrentPage = computed(() => props.item.path === props.currentPath);
-const isActiveBranch = computed(() => isBranchActive(props.item, props.currentPath));
+const hasChildren = computed(() =>
+  Array.isArray(props.item.child) &&
+  props.item.child.length > 0
+);
+
+const isLabelOnly = computed(() =>
+  hasChildren.value &&
+  !props.item.path
+);
+
+const isCurrentPage = computed(() =>
+  props.item.path === props.currentPath
+);
+
+const isActiveBranch = computed(() =>
+  isBranchActive(props.item, props.currentPath)
+);
 
 function isBranchActive(menuItem, currentPath) {
   if (menuItem.path === currentPath) {
     return true;
   }
 
-  if (!Array.isArray(menuItem.child) || menuItem.child.length === 0) {
+  if (
+    !Array.isArray(menuItem.child) ||
+    menuItem.child.length === 0
+  ) {
     return false;
   }
 
-  return menuItem.child.some((child) => isBranchActive(child, currentPath));
+  return menuItem.child.some((child) =>
+    isBranchActive(child, currentPath)
+  );
 }
 
 function handleItemClick() {
-  if (props.item.path && props.item.path !== props.currentPath) {
+  if (
+    props.item.path &&
+    props.item.path !== props.currentPath
+  ) {
     navigateTo(router, props.item.path);
   }
 }
 </script>
 
 <style scoped>
-.side-nav-label {
-  margin: 8px 0 4px;
-  min-height: 24px;
-  color: #6b7280;
+.side-nav-item {
+  width: 64px;
+  height: 68px;
+  min-height: 64px;
+  margin: 0px auto;
+  padding: 0px;
+  border-radius: 0px;
+  color: #4b5565;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
-.side-nav-item {
-  margin-bottom: 6px;
-  min-height: 44px;
-  color: #4b5565;
-  transition: background-color 0.2s ease, color 0.2s ease;
+.side-nav-item__text {
+  margin-left: 0px;
+  font-size: 12px;
+  color: inherit;
+}
+
+.side-nav-item__content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.side-nav-item:active {
+  background-color: #ffffff;
+  color: #127ab7;
+}
+
+.side-nav-item:active .side-nav-item__text {
+  color: #127ab7;
 }
 
 .side-nav-item--branch {
@@ -105,29 +146,13 @@ function handleItemClick() {
 }
 
 .side-nav-item--active {
-  background-color: #E6F0FF;
-  color: #2B7FFF;
-}
-
-.side-nav-item__content {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  padding-left: calc(var(--side-nav-level) * 16px);
-}
-
-.side-nav-item__title {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.side-nav-label .side-nav-item__title {
-  font-size: 13px;
-  font-weight: 700;
+  background-color: #127ab7;
+  color: #ffffff;
 }
 
 .side-nav-children {
-  margin-top: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>
