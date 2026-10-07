@@ -31,11 +31,7 @@ const routes = [
     name: 'UserMenu',
     component: () => import(/* webpackChunkName: "user-menu" */ "@/pages/Auth/UserMenu.vue")
   },
-  {
-    path: '/tag',
-    name: 'TagList',
-    component: () => import(/* webpackChunkName: "tag-list" */ "@/pages/Tag/TagList.vue")
-  },
+  
 ];
 
 const router = createRouter({

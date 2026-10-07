@@ -1,5 +1,5 @@
 <template>
-렌더 화면입니다.
+지도 렌더 화면입니다.
 </template>
 
 <script setup>
@@ -15,7 +15,8 @@ const router = useRouter();
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
-  emit('show-right-btn');
+  emit('hide-top-appbar');
+  emit('hide-side-appbar');
 });
 
 onUnmounted(() => {

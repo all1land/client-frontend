@@ -209,7 +209,7 @@
 import { onMounted, ref, watch, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { navigateTo, goBack } from '@/common/RouterUtil.js';
-import SideNavItem from '@/components/SideNavItem.vue';
+import SideNavItem from '@/components/common/SideNavItem.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -230,7 +230,7 @@ const pageList = ref([
       {
         page: 'MapHome',
         name: '지도 홈',
-        icon: 'mdi-map',
+        icon: 'mdi-map-marker',
         path: '/map',
       },
       {
