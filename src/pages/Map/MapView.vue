@@ -1,5 +1,10 @@
 <template>
   <div class="map-view">
+    <MapTypeControl
+      :current-map-type="currentMapType"
+      @change-map-type="changeMapType"
+    />
+
     <div ref="mapElement" class="map"></div>
   </div>
 </template>
@@ -7,35 +12,37 @@
 <script setup>
 // ----- 선언부 ----- //
 import { onMounted, onUnmounted, ref } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { mapMeta, MAP_TYPE } from "@/common/MapMeta.js";
 
+import { fromLonLat, toLonLat, } from "ol/proj";
 import Map from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
-import OSM from "ol/source/OSM";
-import { fromLonLat, toLonLat } from "ol/proj";
+import XYZ from "ol/source/XYZ";
 import "ol/ol.css";
 
-import { mapMeta } from "@/common/MapMeta.js";
+import MapTypeControl from "@/components/map/hud/MapTypeControl.vue";
 
 const emit = defineEmits([
   "show-right-btn",
   "hide-top-appbar",
 ]);
 
-const router = useRouter();
-const route = useRoute();
 
 // 발산역 기준 좌표 [경도, 위도]
 const BALSAN_STATION = [126.8375, 37.5585];
 const DEFAULT_ZOOM = 16;
 
 const mapElement = ref(null);
+const currentMapType = ref(MAP_TYPE.BASIC);
+
 let map = null;
+let baseTileLayer = null;
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
   emit("hide-top-appbar");
+
   initMap();
 });
 
@@ -47,19 +54,26 @@ onUnmounted(() => {
 });
 
 // ----- 함수 정의 ----- //
+
 function initMap() {
   const meta = mapMeta.get();
 
   const center = meta.view?.center ?? BALSAN_STATION;
   const zoom = meta.view?.zoom ?? DEFAULT_ZOOM;
 
+  currentMapType.value = meta.mapType ?? MAP_TYPE.BASIC;
+
+  const tileSource = meta.tileSources[currentMapType.value];
+
+  baseTileLayer = new TileLayer({
+    source: createTileSource(tileSource),
+  });
+
   map = new Map({
     target: mapElement.value,
 
     layers: [
-      new TileLayer({
-        source: new OSM(),
-      }),
+      baseTileLayer,
     ],
 
     view: new View({
@@ -70,8 +84,34 @@ function initMap() {
     }),
   });
 
-  // 지도 이동/줌 종료 시 현재 상태 저장
   map.on("moveend", saveMapView);
+}
+
+function createTileSource(source) {
+  return new XYZ({
+    url: source.url,
+    minZoom: source.minZoom,
+    maxZoom: source.maxZoom,
+    attributions: source.attributions,
+  });
+}
+
+function changeMapType(type) {
+  const meta = mapMeta.get();
+
+  const tileSource = meta.tileSources[type];
+
+  if (!tileSource) {
+    return;
+  }
+
+  baseTileLayer.setSource(
+    createTileSource(tileSource)
+  );
+
+  currentMapType.value = type;
+
+  mapMeta.setMapType(type);
 }
 
 function saveMapView() {
@@ -79,7 +119,7 @@ function saveMapView() {
     return;
   }
 
-  const view = map.getView();
+  const view =  map.getView();
   const center = view.getCenter();
 
   if (!center) {

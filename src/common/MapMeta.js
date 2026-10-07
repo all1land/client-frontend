@@ -15,20 +15,23 @@ const DEFAULT_MAP_META = {
       url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       minZoom: 0,
       maxZoom: 19,
+      attributions: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
     },
 
     satellite: {
       type: 'XYZ',
-      url: '',
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       minZoom: 0,
       maxZoom: 19,
+      attributions: 'Tiles © <a href="https://www.esri.com/">Esri</a>',
     },
 
     terrain: {
       type: 'XYZ',
-      url: '',
+      url: 'https://tile.opentopomap.org/{z}/{x}/{y}.png',
       minZoom: 0,
-      maxZoom: 19,
+      maxZoom: 17,
+      attributions: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, SRTM | Map style: <a href="https://opentopomap.org/">OpenTopoMap</a> (CC-BY-SA)',
     },
   },
 
@@ -54,15 +57,33 @@ class MapMeta {
 
     try {
       const saved = JSON.parse(data);
+      const savedTileSources = saved.tileSources ?? {};
+      const tileSources = {
+        ...DEFAULT_MAP_META.tileSources,
+        ...savedTileSources,
+      };
+
+      for (const [mapType, defaultSource] of Object.entries(DEFAULT_MAP_META.tileSources)) {
+        const savedSource = savedTileSources[mapType] ?? {};
+        const isLegacyTerrainUrl = mapType === MAP_TYPE.TERRAIN
+          && savedSource.url?.includes('/World_Topo_Map/MapServer/tile/');
+
+        tileSources[mapType] = {
+          ...defaultSource,
+          ...savedSource,
+          url: !savedSource.url || isLegacyTerrainUrl
+            ? defaultSource.url
+            : savedSource.url,
+          maxZoom: Math.min(savedSource.maxZoom ?? defaultSource.maxZoom, defaultSource.maxZoom),
+          attributions: savedSource.attributions ?? defaultSource.attributions,
+        };
+      }
 
       return {
         ...structuredClone(DEFAULT_MAP_META),
         ...saved,
 
-        tileSources: {
-          ...DEFAULT_MAP_META.tileSources,
-          ...saved.tileSources,
-        },
+        tileSources,
 
         view: {
           ...DEFAULT_MAP_META.view,
