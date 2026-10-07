@@ -13,7 +13,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 const routes = [
   {
     path: '/',
-    redirect: '/stats'
+    redirect: '/map'
   },
 
   {
@@ -30,6 +30,11 @@ const routes = [
     path: '/user',
     name: 'UserMenu',
     component: () => import(/* webpackChunkName: "user-menu" */ "@/pages/Auth/UserMenu.vue")
+  },
+  {
+    path: '/map',
+    name: 'MapView',
+    component: () => import(/* webpackChunkName: "map-view" */ "@/pages/Map/MapView.vue")
   },
   
 ];

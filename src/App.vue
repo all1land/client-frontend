@@ -228,7 +228,7 @@ const pageList = ref([
     name: '데이터 플랫폼',
     child: [
       {
-        page: 'MapHome',
+        page: 'MapView',
         name: '지도 홈',
         icon: 'mdi-map-marker',
         path: '/map',
