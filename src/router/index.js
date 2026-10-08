@@ -15,7 +15,6 @@ const routes = [
     path: '/',
     redirect: '/map'
   },
-
   {
     path: '/login',
     name: 'Login',
@@ -33,9 +32,25 @@ const routes = [
   },
   {
     path: '/map',
-    name: 'MapView',
-    component: () => import(/* webpackChunkName: "map-view" */ "@/pages/Map/MapView.vue")
-  },
+    component: () => import('@/pages/Map/MapView.vue'),
+    name: 'Map',
+    children: [
+      { path: '', 
+        name: 'MapHome', 
+        component: () => import('@/pages/Map/MapHomePanel.vue')
+      },
+      {
+        path: 'directions',
+        name: 'MapDirections',
+        component: () => import('@/pages/Map/MapDirectionsPanel.vue')
+      },
+      {
+        path: 'settings',
+        name: 'MapSettings',
+        component: () => import('@/pages/Map/MapSettingsPanel.vue')
+      },
+    ],
+  }
   
 ];
 

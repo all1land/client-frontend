@@ -1,7 +1,9 @@
 <template>
   <div class="map-view">
 
-    <MapSidePannel />
+    <MapSidePannel>
+      <router-view />
+    </MapSidePannel>
 
     <MapTypeControl
       :current-map-type="currentMapType"
