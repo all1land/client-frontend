@@ -11,7 +11,7 @@
     >
       <v-col cols="auto" class="pl-5 | side-nav-header">
         <v-img
-          src="@/assets/title.png"
+          src="@/assets/logo.png"
           alt="TryAngle Logo"
           contain width="64" 
           @click="handleClickBtn('goToHome')"

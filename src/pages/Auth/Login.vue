@@ -10,7 +10,7 @@
       >
         <v-col cols="auto" class="header-subtitle">
           <v-img
-          src="@/assets/title.png"
+          src="@/assets/logo.png"
           alt="TryAngle Logo"
           contain width="200"
           />
