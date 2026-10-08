@@ -52,7 +52,6 @@ import MapTypeControl from "@/components/map/hud/MapTypeControl.vue";
 
 const emit = defineEmits([
   "show-right-btn",
-  "hide-top-appbar",
 ]);
 
 
@@ -73,8 +72,6 @@ let baseTileLayer = null;
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
-  emit("hide-top-appbar");
-
   initMap();
 });
 

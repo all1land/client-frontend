@@ -2,12 +2,12 @@
   <div class="map-side-panel" :class="{ folded: isFolded }">
     <!-- 패널 내용 -->
     <v-row no-gutters class="panel-content">
-      <!-- 여기에 내용 -->
+      <slot />
     </v-row>
 
     <!-- 북마크형 접기 버튼 -->
     <button class="fold-button" @click="isFolded = !isFolded">
-      {{ isFolded ? "▶" : "◀" }}
+      <v-icon :icon="isFolded ? 'mdi-chevron-right' : 'mdi-chevron-left'" />
     </button>
   </div>
 </template>

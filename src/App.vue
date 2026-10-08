@@ -28,146 +28,65 @@
           :current-path="currentSideNavPath"
         />
       </v-list>
-    </v-navigation-drawer>
 
-    <v-app-bar 
-      app color="#FFFFFF" flat
-      v-if="showTopNav"
-    >
-      <v-row no-gutters class="justify-space-between | align-center | header-container">
-        <template v-if="!showLeftBtn">
-          <v-col cols="auto" class="pl-5">
-            <span class="app-title-left">{{ currentPageCfg.name }}</span>
-          </v-col>
-
-          <v-col cols="auto" class="pr-2">
-            <v-menu location="bottom end" :close-on-content-click="true">
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  variant="outlined"
-                  size="40"
-                  rounded="circle"
-                  class="profileIcon"
-                >
-                  <v-img
-                    :src="userProfileUrl"
-                    alt="Profile"
-                    cover
-                    width="40"
-                    height="40"
-                  />
-                </v-btn>
-              </template>
-
-              <v-row
-                no-gutters
-                class="menu-container | justify-center | elevation-2"
-              >
-                <v-col cols="12" class="justify-start">
-                  <v-btn
-                    variant="text"
-                    color="#364153" class="menu-btn | border-radius-top"
-                    @click="handleClickBtn('goToProfile')"
-                    block
-                  >
-                    <template v-slot:prepend>
-                      <v-icon color="#364153" size="large" icon="mdi-account-outline" class="ml-1"/>
-                      <v-col>프로필 편집</v-col>
-                    </template>
-                  </v-btn>
-                </v-col>
-                <v-col cols="12" class="justify-start">
-                  <v-btn
-                    variant="text"
-                    color="#FB2C2C" class="menu-btn | red-text | border-radius-bottom"
-                    @click="handleClickBtn('logout')"
-                    block
-                  >
-                    <template v-slot:prepend>
-                      <v-icon color="#FB2C2C" size="large" icon="mdi-logout" class="ml-1"/>
-                      <v-col>로그아웃</v-col>
-                    </template>
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-menu>
-          </v-col>
-        </template>
-
-        <template v-else>
-          <v-col cols="auto" class="pl-2">
+      <template v-slot:append>
+        <v-menu location="bottom end" :close-on-content-click="true">
+          <template #activator="{ props }">
             <v-btn
-              v-if="showLeftBtn"
-              icon="mdi-chevron-left" 
-              variant="text" density="comfortable"
-              @click="handleClickBtn('goToBack')"
-            ></v-btn>
-            <div v-else style="width: 40px;"></div>
-            <span class="app-title-left">{{ currentPageCfg.name }}</span>
-          </v-col>
-
-          <v-col cols="auto" class="pr-2">
-            <v-menu location="bottom end" :close-on-content-click="true">
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  variant="outlined"
-                  size="40"
-                  rounded="circle"
-                  class="profileIcon"
-                >
-                  <v-img
-                    :src="userProfileUrl"
-                    alt="Profile"
-                    cover
-                    width="40"
-                    height="40"
-                  />
-                </v-btn>
-              </template>
-
-
-              <v-row
-                no-gutters
-                class="menu-container | justify-center | elevation-2"
+              v-bind="props"
+              variant="outlined"
+              size="40"
+              rounded="circle"
+              class="profileIcon"
+            >
+              <v-img
+                :src="userProfileUrl"
+                alt="Profile"
+                cover
+                width="40"
+                height="40"
+              />
+            </v-btn>
+          </template>
+  
+          <v-row
+            no-gutters
+            class="menu-container | justify-center | elevation-2"
+          >
+            <v-col cols="12" class="justify-start">
+              <v-btn
+                variant="text"
+                color="#364153" class="menu-btn | border-radius-top"
+                @click="handleClickBtn('goToProfile')"
+                block
               >
-                <v-col cols="12" class="justify-start">
-                  <v-btn
-                    variant="text"
-                    color="#364153" class="menu-btn | border-radius-top"
-                    @click="handleClickBtn('goToProfile')"
-                    block
-                  >
-                    <template v-slot:prepend>
-                      <v-icon color="#364153" size="large" icon="mdi-account-outline" class="ml-1"/>
-                      <v-col>프로필 편집</v-col>
-                    </template>
-                  </v-btn>
-                </v-col>
-                <v-col cols="12" class="justify-start">
-                  <v-btn
-                    variant="text"
-                    color="#FB2C2C" class="menu-btn | red-text | border-radius-bottom"
-                    @click="handleClickBtn('logout')"
-                    block
-                  >
-                    <template v-slot:prepend>
-                      <v-icon color="#FB2C2C" size="large" icon="mdi-logout" class="ml-1"/>
-                      <v-col>로그아웃</v-col>
-                    </template>
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-menu>
-          </v-col>
-        </template>
-      </v-row>
-    </v-app-bar>
+                <template v-slot:prepend>
+                  <v-icon color="#364153" size="large" icon="mdi-account-outline" class="ml-1"/>
+                  <v-col>프로필 편집</v-col>
+                </template>
+              </v-btn>
+            </v-col>
+            <v-col cols="12" class="justify-start">
+              <v-btn
+                variant="text"
+                color="#FB2C2C" class="menu-btn | red-text | border-radius-bottom"
+                @click="handleClickBtn('logout')"
+                block
+              >
+                <template v-slot:prepend>
+                  <v-icon color="#FB2C2C" size="large" icon="mdi-logout" class="ml-1"/>
+                  <v-col>로그아웃</v-col>
+                </template>
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-menu>
+      </template>
+
+    </v-navigation-drawer>
 
     <v-main>
       <router-view
-        @hide-top-appbar="hideTopNav"
         @hide-side-appbar="hideSideNav"
         @show-left-btn="showLeftNavBtn"
         @set-page-cfg="setCurrentPageCfg"
@@ -214,7 +133,6 @@ import SideNavItem from '@/components/common/SideNavItem.vue';
 const router = useRouter();
 const route = useRoute();
 
-const showTopNav = ref(true);
 const showSideNav = ref(true);
 const currentPageCfgOverride = ref(null);
 const showLeftBtn = ref(false);
@@ -303,7 +221,6 @@ onMounted(() => {
 watch(
   () => route.path,
   () => {
-    showTopNav.value = true;
     showSideNav.value = true;
     showLeftBtn.value = false;
     currentPageCfgOverride.value = null;
@@ -337,11 +254,6 @@ function checkLogin() {
     console.log('로그인 정보 없음 - 로그인 페이지로 이동');
     navigateTo(router, '/login');
   }
-}
-
-// 상단 앱 바 숨기기
-function hideTopNav() {
-  showTopNav.value = false;
 }
 
 // 하단 앱 바 숨기기
@@ -382,31 +294,6 @@ function findPageByPath(pages, targetPath) {
   }
 
   return null;
-}
-
-// 메뉴 클릭 핸들러
-function handleMenuClick(action) {
-  console.log('Menu Clicked:', action);
-  isFabOpen.value = false; // 클릭 후 닫기
-  
-  // 액션에 따른 라우팅 처리 예시
-  switch (action) {
-    case 'create':
-      navigateTo(router, '/group/create');
-      break;
-
-    case 'profile':
-      navigateTo(router, '/user');
-      break;
-
-    case 'userGroup':
-      navigateTo(router, '/group/user');
-      break;
-
-    case 'UserReview':
-      navigateTo(router, '/review');
-      break;
-  }
 }
 
 // 버튼 클릭 이벤트 핸들러
@@ -475,18 +362,17 @@ function openDialog(title, text, onConfirm, isOneBtn, okText) {
   justify-content: center;
 }
 
-/* 네비게이션 바 스타일 */
-.app-title-left {
-  font-size: 18px;
-  font-weight: 700;
-  color: #364153;
-  letter-spacing: -0.2px;
+:deep(.v-navigation-drawer__append) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .profileIcon {
-  background-color: #F3F4F6;
+  background-color: #F1F6F9;
   border: 0px;
   overflow: hidden; 
+  margin: 12px;
 }
 
 .floating-btn {
