@@ -126,7 +126,7 @@ const dialog = ref({
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
-  emit('hide-top-appbar');
+  
 });
 
 onUnmounted(() => {

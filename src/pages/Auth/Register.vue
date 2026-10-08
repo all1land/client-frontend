@@ -10,7 +10,7 @@
       >
         <v-col cols="auto" class="header-subtitle">
           <v-img
-          src="@/assets/title.png"
+          src="@/assets/logo.png"
           alt="TryAngle Logo"
           contain width="200"
           />
@@ -156,7 +156,7 @@ import { useRouter, useRoute } from "vue-router";
 import { navigateTo } from '@/common/RouterUtil.js';
 import * as HttpHandler from '@/common/HttpHandler.js';
 
-const emit = defineEmits(['hide-top-appbar', 'hide-side-appbar']);
+const emit = defineEmits(['hide-side-appbar']);
 const router = useRouter(); 
 
 const userEmail = ref('');
@@ -186,7 +186,6 @@ const dialog = ref({
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
-  emit('hide-top-appbar');
   emit('hide-side-appbar');
 });
 
