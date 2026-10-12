@@ -1,6 +1,6 @@
 <template>
     <v-card 
-        class="meeting-card | pa-3" 
+        class="meeting-card" 
         variant="outlined"
         style="cursor: pointer;"
     >
@@ -72,7 +72,7 @@ onUnmounted(() => {
 }
 
 .meeting-card {
-    margin: 0 12px;
+    margin-bottom: 8px;
     border: 0px solid #FFFFFF;
     background-color: #FFFFFF;
 }
