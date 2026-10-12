@@ -1,12 +1,15 @@
 <template>
   <v-row no-gutters class="searchbox-list">
-    <v-text-field
+    <v-autocomplete
         v-model="search.keyword"
-        placeholder="장소, 주차장, 주소 검색" 
         prepend-inner-icon="mdi-magnify"
         class="inputbox | mr-2"
         variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#8AB63F" color="#8AB63F"
         hide-details
+        :items="searchItems"
+        item-title="keyword"
+        item-value="keyword"
+        @keydown.enter="saveSearch"
     />
 
   </v-row>
@@ -27,6 +30,7 @@ import { useRouter, useRoute } from "vue-router";
 import { routes } from "@/router"
 
 import * as HttpHandler from '@/common/HttpHandler.js';
+import { searchHistory } from '@/common/MapHistory.js';
 
 import PlaceCard from "@/components/map/place/PlaceCard.vue";
 
@@ -35,10 +39,14 @@ const places = ref([]);
 const search = ref({
   keyword: ''
 });
+const searchItems = ref([
+  // TODO: 검색기록 + 연관검색어 함께 뿌려주기
+]);
 
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
+  searchItems.value = searchHistory.getAll();
   fetchListPlaces();
 });
 
@@ -46,6 +54,20 @@ onUnmounted(() => {
 })
 
 // ----- 함수 정의 ----- //
+function saveSearch() {
+  const keyword = search.value.keyword.trim();
+
+  if (!keyword) {
+    return;
+  }
+
+  searchHistory.add({
+    key: keyword,
+    keyword,
+  });
+  searchItems.value = searchHistory.getAll();
+}
+
 async function fetchListPlaces() {
   try {
     const response = await HttpHandler.listPlaces({
