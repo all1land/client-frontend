@@ -9,17 +9,23 @@
         :items="searchItems"
         item-title="keyword"
         item-value="keyword"
-        @keydown.enter="saveSearch"
+        @keydown.enter="saveSearchHistory"
     />
-
   </v-row>
-  <v-row no-gutters class="container-list">
+
+  <v-row v-if="places.length" no-gutters class="container-list">
     <v-col cols="12" class="list-header">주변</v-col>
     <PlaceCard
       v-for="place in places"
       :key="place.id"
       :place="place"
     />
+  </v-row>
+
+  <v-row v-else no-gutters class="container-list">
+    <v-col cols="auto">
+      조건에 맞는 장소가 없습니다.
+    </v-col>
   </v-row>
 </template>
 
@@ -39,14 +45,12 @@ const places = ref([]);
 const search = ref({
   keyword: ''
 });
-const searchItems = ref([
-  // TODO: 검색기록 + 연관검색어 함께 뿌려주기
-]);
+const searchItems = ref([]);
 
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
-  searchItems.value = searchHistory.getAll();
+  getSearchHistory();
   fetchListPlaces();
 });
 
@@ -54,7 +58,7 @@ onUnmounted(() => {
 })
 
 // ----- 함수 정의 ----- //
-function saveSearch() {
+function saveSearchHistory() {
   const keyword = search.value.keyword.trim();
 
   if (!keyword) {
@@ -67,6 +71,12 @@ function saveSearch() {
   });
   searchItems.value = searchHistory.getAll();
 }
+
+function getSearchHistory() {
+  // TODO: 검색기록 + 연관검색어 함께 뿌려주기
+  searchItems.value = searchHistory.getAll();
+}
+
 
 async function fetchListPlaces() {
   try {
@@ -112,6 +122,8 @@ async function fetchListPlaces() {
   width: 100%;
   height: 100%;
   overflow-y: auto;
+  justify-content: center;
+  align-items: flex-start;
 }
 .list-header {
   font-size: 18px;
