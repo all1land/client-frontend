@@ -50,6 +50,12 @@ onUnmounted(() => {
     transition: transform 0.3s ease;
 }
 
+.panel-content {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
 .map-side-panel.folded {
     transform: translateX(-100%);
 }
