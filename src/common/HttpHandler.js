@@ -472,7 +472,7 @@ export async function listPlaces(params = {}) {
     lng: "126.8270",
     zip_code: "07792",
     road_name_address: "서울특별시 강서구 마곡중앙로 지하 135",
-    phone: null,
+    phone: "02-2104-9716",
   },
   {
     id: 3,
@@ -485,7 +485,7 @@ export async function listPlaces(params = {}) {
     lng: "126.8282",
     zip_code: "07792",
     road_name_address: "서울특별시 강서구 마곡중앙로 일대",
-    phone: null,
+    phone: "02-2104-9716",
   },
   {
     id: 4,
@@ -498,7 +498,7 @@ export async function listPlaces(params = {}) {
     lng: "126.8345",
     zip_code: "07796",
     road_name_address: "서울특별시 강서구 마곡중앙10로 30",
-    phone: null,
+    phone: "02-2104-9716",
   },
   {
     id: 5,
@@ -511,7 +511,7 @@ export async function listPlaces(params = {}) {
     lng: "126.8262",
     zip_code: "07798",
     road_name_address: "서울특별시 강서구 마곡중앙로 143",
-    phone: null,
+    phone: "02-2104-9716",
   },
   {
     id: 6,
@@ -524,7 +524,7 @@ export async function listPlaces(params = {}) {
     lng: "126.8377",
     zip_code: "07803",
     road_name_address: "서울특별시 강서구 공항대로 지하 267",
-    phone: null,
+    phone: "02-2104-9716",
   },
   {
     id: 7,
@@ -537,7 +537,7 @@ export async function listPlaces(params = {}) {
     lng: "126.8255",
     zip_code: "07801",
     road_name_address: "서울특별시 강서구 공항대로 지하 163",
-    phone: null,
+    phone: "02-2104-9716",
   },
   {
     id: 8,
@@ -563,7 +563,7 @@ export async function listPlaces(params = {}) {
     lng: "126.8385",
     zip_code: "07524",
     road_name_address: "서울특별시 강서구 양천로47길 36",
-    phone: null,
+    phone: "02-2104-9716",
   },
   {
     id: 10,
@@ -576,7 +576,7 @@ export async function listPlaces(params = {}) {
     lng: "126.8509",
     zip_code: "07525",
     road_name_address: "서울특별시 강서구 허준로 87",
-    phone: null,
+    phone: "02-2104-9716",
   },
   ];
   const page = Number(params.page) || 1;
