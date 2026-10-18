@@ -1,3 +1,6 @@
+import parkingRows from '@/assets/parking/gangseo-parking-lots.json';
+import { normalizeParkingLots, findNearbyParkingLots } from '@/common/ParkingSearch.js';
+
 /**
  * HTTP 요청을 처리하는 클래스
  * 공통 헤더, 베이스 URL, 에러 핸들링 등을 관리합니다.
@@ -606,3 +609,23 @@ export async function listPlaces(params = {}) {
 //
 // // 모임 생성
 // await createMeeting({ title: '점심 모임', description: '같이 밥 먹어요' });
+
+// ----- 주차장 데모 조회 ----- //
+export async function listNearbyParkingLots(params = {}) {
+  const parkingLots = normalizeParkingLots(parkingRows);
+
+  if (parkingLots.length !== 37) {
+    throw new Error('#10의 실제 주차장 37건 연결을 확인하세요.');
+  }
+
+  return {
+    data: {
+      items: findNearbyParkingLots(
+        parkingLots,
+        params.destination,
+        params.radiusMeters,
+      ),
+      sourceTotal: parkingLots.length,
+    },
+  };
+}

@@ -1,0 +1,8 @@
+{
+  "repository": "all1land/backend",
+  "commit": "4be757a24171ed721e28f278bbff60aaea584902",
+  "path": "src/main/resources/db/seed/V5__insert_gangseo_parking_lots.sql",
+  "count": 37,
+  "identity": "provider_code + external_id",
+  "usage": "Seed에서 변환한 프런트엔드 데모 데이터. 실행 중인 DB 조회가 아님."
+}

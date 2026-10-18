@@ -38,7 +38,7 @@
 
 <script setup>
 // ----- 선언부 ----- //
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref, shallowRef, provide } from "vue";
 import { mapMeta, MAP_TYPE } from "@/common/MapMeta.js";
 
 import { fromLonLat, toLonLat, } from "ol/proj";
@@ -72,12 +72,17 @@ const currentMapType = ref(MAP_TYPE.BASIC);
 let map = null;
 let baseTileLayer = null;
 
+const mapInstance = shallowRef(null);
+provide('parkingMap', mapInstance);
+
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
   initMap();
+  mapInstance.value = map;
 });
 
 onUnmounted(() => {
+  mapInstance.value = null;
   if (map) {
     map.setTarget(undefined);
     map = null;

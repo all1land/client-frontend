@@ -45,6 +45,11 @@ const routes = [
         component: () => import('@/pages/Map/MapDirectionsPanel.vue')
       },
       {
+        path: 'parking',
+        name: 'MapParking',
+        component: () => import('@/pages/Map/MapParkingPanel.vue')
+      },
+      {
         path: 'settings',
         name: 'MapSettings',
         component: () => import('@/pages/Map/MapSettingsPanel.vue')
