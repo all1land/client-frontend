@@ -157,13 +157,7 @@ const pageList = ref([
         icon: 'mdi-parking',
         path: '/map/directions',
       },
-      {
-        page: 'MapParking',
-        name: '주변 주차장',
-        icon: 'mdi-map-marker-radius',
-        path: '/map/parking',
-      },
-      {
+{
         page: 'UserSettings',
         name: '더보기',
         icon: 'mdi-dots-horizontal',

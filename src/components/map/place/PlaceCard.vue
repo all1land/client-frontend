@@ -23,16 +23,16 @@
         </v-row>
 
         <v-row no-gutters class="align-center">
-            <v-chip v-if="props.place.category_code === 1" size="small" variant="outline" class="category-chip" prepend-icon="mdi-coffee">일상/친목</v-chip>
-            <v-chip v-if="props.place.category_code === 2" size="small" variant="outline" class="category-chip" prepend-icon="mdi-trophy">대외활동/공모전</v-chip>
-            <v-chip v-if="props.place.category_code === 3" size="small" variant="outline" class="category-chip" prepend-icon="mdi-briefcase">커리어</v-chip>
-            <v-chip v-if="props.place.category_code === 4" size="small" variant="outline" class="category-chip" prepend-icon="mdi-book-open-page-variant">스터디</v-chip>
-            <v-chip v-if="props.place.category_code === 5" size="small" variant="outline" class="category-chip" prepend-icon="mdi-palette">취미/여가</v-chip>
-            <v-chip v-if="props.place.category_code === 1" size="small" variant="outline" class="tag-chip">일상/친목</v-chip>
-            <v-chip v-if="props.place.category_code === 2" size="small" variant="outline" class="tag-chip">대외활동/공모전</v-chip>
-            <v-chip v-if="props.place.category_code === 3" size="small" variant="outline" class="tag-chip">커리어</v-chip>
-            <v-chip v-if="props.place.category_code === 4" size="small" variant="outline" class="tag-chip">스터디</v-chip>
-            <v-chip v-if="props.place.category_code === 5" size="small" variant="outline" class="tag-chip">취미/여가</v-chip>
+            <v-chip v-if="props.place.category_code === 1" size="small" variant="outlined" class="category-chip" prepend-icon="mdi-coffee">일상/친목</v-chip>
+            <v-chip v-if="props.place.category_code === 2" size="small" variant="outlined" class="category-chip" prepend-icon="mdi-trophy">대외활동/공모전</v-chip>
+            <v-chip v-if="props.place.category_code === 3" size="small" variant="outlined" class="category-chip" prepend-icon="mdi-briefcase">커리어</v-chip>
+            <v-chip v-if="props.place.category_code === 4" size="small" variant="outlined" class="category-chip" prepend-icon="mdi-book-open-page-variant">스터디</v-chip>
+            <v-chip v-if="props.place.category_code === 5" size="small" variant="outlined" class="category-chip" prepend-icon="mdi-palette">취미/여가</v-chip>
+            <v-chip v-if="props.place.category_code === 1" size="small" variant="outlined" class="tag-chip">일상/친목</v-chip>
+            <v-chip v-if="props.place.category_code === 2" size="small" variant="outlined" class="tag-chip">대외활동/공모전</v-chip>
+            <v-chip v-if="props.place.category_code === 3" size="small" variant="outlined" class="tag-chip">커리어</v-chip>
+            <v-chip v-if="props.place.category_code === 4" size="small" variant="outlined" class="tag-chip">스터디</v-chip>
+            <v-chip v-if="props.place.category_code === 5" size="small" variant="outlined" class="tag-chip">취미/여가</v-chip>
         </v-row>
     </v-card>
 </template>

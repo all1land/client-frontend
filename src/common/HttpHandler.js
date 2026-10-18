@@ -629,3 +629,27 @@ export async function listNearbyParkingLots(params = {}) {
     },
   };
 }
+
+
+// ----- 기존 #9 경로 API 호출 ----- //
+function requireRouteApi() {
+  if (!import.meta.env.VITE_API_BASE_URL) {
+    throw new Error('경로 API 서버 주소가 설정되지 않았습니다.');
+  }
+}
+
+export async function getWalkingRoute(params = {}) {
+  requireRouteApi();
+  return request('GET', '/api/routes/walking', {
+    params,
+    timeout: 10000,
+  });
+}
+
+export async function getDrivingRoute(params = {}) {
+  requireRouteApi();
+  return request('GET', '/api/routes/driving', {
+    params,
+    timeout: 10000,
+  });
+}

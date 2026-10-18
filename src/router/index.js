@@ -47,7 +47,7 @@ const routes = [
       {
         path: 'parking',
         name: 'MapParking',
-        component: () => import('@/pages/Map/MapParkingPanel.vue')
+        redirect: '/map'
       },
       {
         path: 'settings',

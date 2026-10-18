@@ -3,8 +3,8 @@
     <h2 class="mb-4">목적지 주변 주차장</h2>
 
     <p class="mb-4">
-      지도를 클릭해 목적지를 선택하세요.
-      빨강은 목적지, 파랑은 주차장, 초록은 선택한 주차장입니다.
+      선택한 목적지 주변 주차장입니다.
+      주차장을 선택하면 목적지까지의 경로를 조회합니다.
     </p>
 
     <v-select
@@ -41,19 +41,25 @@
       :selected-id="selectedId"
       @select="selectParking"
     />
+    <ParkingRouteResult
+      v-if="selectedParking"
+      :parking="selectedParking"
+      :destination="destination"
+    />
   </section>
 </template>
 
 <script setup>
-import { inject, ref, watch, onBeforeUnmount } from 'vue';
+import { computed, inject, ref, watch, onBeforeUnmount } from 'vue';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import { Style, Circle as CircleStyle, Fill, Stroke } from 'ol/style';
-import { fromLonLat, toLonLat } from 'ol/proj';
+import { fromLonLat } from 'ol/proj';
 
 import ParkingList from '@/components/map/parking/ParkingList.vue';
+import ParkingRouteResult from '@/components/map/parking/ParkingRouteResult.vue';
 import { listNearbyParkingLots } from '@/common/HttpHandler.js';
 
 // ----- 선언부 ----- //
@@ -63,7 +69,15 @@ if (!mapInstance) {
   throw new Error('기존 지도 객체가 연결되지 않았습니다.');
 }
 
-const destination = ref(null);
+const props = defineProps({
+  selectedDestination: { type: Object, required: true },
+});
+
+const destination = computed(() => props.selectedDestination);
+
+const selectedParking = computed(() =>
+  items.value.find((item) => item.id === selectedId.value) ?? null,
+);
 const radiusMeters = ref(1000);
 const items = ref([]);
 const sourceTotal = ref(0);
@@ -100,7 +114,11 @@ const stopMapWatch = watch(mapInstance, (nextMap) => {
   redrawMarkers();
 }, { immediate: true });
 
-watch([destination, radiusMeters], searchParking);
+watch(
+  [destination, radiusMeters],
+  searchParking,
+  { immediate: true },
+);
 
 onBeforeUnmount(() => {
   requestId += 1;
@@ -151,8 +169,7 @@ function handleMapClick(event) {
     return;
   }
 
-  const [longitude, latitude] = toLonLat(event.coordinate);
-  destination.value = { longitude, latitude };
+  // 목적지는 지도 홈 검색 결과에서 선택합니다.
 }
 
 async function searchParking() {
@@ -177,6 +194,15 @@ async function searchParking() {
 
     items.value = response.data.items;
     sourceTotal.value = response.data.sourceTotal;
+
+    attachedMap?.getView().animate({
+      center: fromLonLat([
+        destination.value.longitude,
+        destination.value.latitude,
+      ]),
+      zoom: 15,
+      duration: 300,
+    });
   } catch (error) {
     if (currentRequest !== requestId) return;
     errorMessage.value = error.message || '주차장 조회에 실패했습니다.';
