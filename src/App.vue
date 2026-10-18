@@ -157,7 +157,7 @@ const pageList = ref([
         icon: 'mdi-parking',
         path: '/map/directions',
       },
-{
+      {
         page: 'UserSettings',
         name: '더보기',
         icon: 'mdi-dots-horizontal',
