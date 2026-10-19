@@ -60,7 +60,7 @@ import { fromLonLat } from 'ol/proj';
 
 import ParkingList from '@/components/map/parking/ParkingList.vue';
 import ParkingRouteResult from '@/components/map/parking/ParkingRouteResult.vue';
-import { listNearbyParkingLots } from '@/common/HttpHandler.js';
+import HttpHandler from '@/common/HttpHandler.js';
 
 // ----- 선언부 ----- //
 const mapInstance = inject('parkingMap');
@@ -185,7 +185,7 @@ async function searchParking() {
   loading.value = true;
 
   try {
-    const response = await listNearbyParkingLots({
+    const response = await HttpHandler.listParking({
       destination: destination.value,
       radiusMeters: radiusMeters.value,
     });

@@ -611,7 +611,7 @@ export async function listPlaces(params = {}) {
 // await createMeeting({ title: '점심 모임', description: '같이 밥 먹어요' });
 
 // ----- 주차장 데모 조회 ----- //
-export async function listNearbyParkingLots(params = {}) {
+export async function listParking(params = {}) {
   const parkingLots = normalizeParkingLots(parkingRows);
 
   if (parkingLots.length !== 37) {
