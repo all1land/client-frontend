@@ -13,18 +13,9 @@
       color="#8AB63F"
       hide-details
       clearable
-      label="목적지 검색"
-      :items="historyItems"
-      @keydown.enter.prevent="searchPlaces"
+      placeholder="장소 검색"
+      @keydown.enter.prevent="handleEvent('search')"
     />
-
-    <v-btn
-      color="primary"
-      :loading="loading"
-      @click="searchPlaces"
-    >
-      검색
-    </v-btn>
   </v-row>
 
   <v-alert v-if="errorMessage" type="error" class="ma-3">
@@ -84,11 +75,14 @@ import { searchHistory } from '@/common/MapHistory.js';
 import PlaceCard from '@/components/map/place/PlaceCard.vue';
 import MapParkingPanel from '@/pages/Map/MapParkingPanel.vue';
 
-const keyword = ref('');
+const keyword = ref(null);
 const searchText = ref('');
 const historyItems = ref([]);
+
 const places = ref([]);
+
 const destination = ref(null);
+
 const searched = ref(false);
 const loading = ref(false);
 const errorMessage = ref('');
@@ -199,23 +193,36 @@ function selectDestination(place) {
   font-size: 16px !important;
 }
 
+.inputbox :deep(.v-field__input::placeholder) {
+  color: #364153 !important;
+  font-size: 16px !important;
+  opacity: 1;
+}
+
+.inputbox :deep(.v-field__overlay) {
+  border: 2.5px solid #8AB63F !important;
+  border-radius: 4px !important;
+}
+
 .inputbox :deep(.v-icon) {
   color: #8AB63F !important;
   opacity: 1;
 }
 
 .container-list {
-  margin: 12px;
-  width: auto;
+  width: 100%;
+  height: 100%;
   overflow-y: auto;
   justify-content: center;
   align-items: flex-start;
+  align-content: flex-start;
 }
 
 .list-header {
+  width: 100%;
   font-size: 18px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin: 12px 12px 0px 12px;
 }
 
 .searchbox-list {

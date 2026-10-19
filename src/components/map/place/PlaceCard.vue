@@ -1,9 +1,20 @@
 <template>
     <v-card 
-        class="meeting-card" 
+        class="meeting-card"
         variant="outlined"
         style="cursor: pointer;"
     >
+
+        <!-- hover 시 나타나는 출발 버튼 -->
+        <v-btn
+            class="depart-btn"
+            variant="outlined" density="comfortable" rounded="circle" base-color="#127ab7" color="#127ab7"
+            height="36" width="36"
+            @click.stop="handleEvent('select')"
+        >
+            출발
+        </v-btn>
+
         <div class="card-title">{{ props.place.title }}</div>
         <div class="card-description | mt-2">{{ props.place.description }}</div>
 
@@ -47,8 +58,9 @@ const props = defineProps({
   place: {
     type: Object,
     required: true,
-  },
+  }
 });
+const emit = defineEmits(["select"]);
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
@@ -61,6 +73,18 @@ onUnmounted(() => {
 
 // ----- 함수 정의 ----- //
 
+// 버튼 클릭 이벤트 핸들러
+function handleEvent(action) {
+  switch (action) {
+    case 'select':
+        console.log('select action triggered');
+        emit("select", props.place);
+        break;
+
+    default:
+      console.error('알 수 없는 인증 액션 타입:', action);
+  }
+}
 
 
 
@@ -72,10 +96,15 @@ onUnmounted(() => {
 }
 
 .meeting-card {
-    margin-bottom: 8px;
+    padding: 12px;
     border: 0px solid #FFFFFF;
     background-color: #FFFFFF;
 }
+
+.meeting-card--selected {
+    background-color: #F3F4F6;
+}
+
 .card-title {
     font-size: 16px;
     font-weight: 600;
@@ -85,6 +114,35 @@ onUnmounted(() => {
 .card-description {
     font-size: 14px;
     color: #4A5565;
+}
+
+/* ----- 출발 버튼 ----- */
+.depart-btn {
+    background-color: #FFFFFF;
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%); 
+    cursor: pointer;
+    z-index: 2;
+
+    /* 기본은 숨김 */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.1s ease;
+
+    height: 36px !important;
+    width: 36px !important;
+}
+
+/* 카드 hover */
+.meeting-card:hover {
+    background-color: #F3F4F6;
+}
+
+.meeting-card:hover .depart-btn {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .category-chip {
@@ -115,25 +173,6 @@ onUnmounted(() => {
     box-shadow: none !important;
 }
 
-.status-chip-recruiting {
-    background-color: #FEF9C2 !important;
-    color: #A65F00 !important;
-}
-
-.status-chip-applied {
-    background-color: #E6F0FF !important;
-    color: #127AB7 !important;
-}
-
-.status-chip-completed {
-    background-color: #F3F4F6 !important;
-    color: #4A5565 !important;
-}
-
-.status-chip-ongoing {
-    background-color: #D4F5E9 !important;
-    color: #0D9F6E !important;
-}
 
 .categoryId-text {
     font-size: 12px;
@@ -157,17 +196,7 @@ onUnmounted(() => {
     color: #6A7282;
 }
 
-.apply-chip {
-    font-weight: 400;
-    font-size: 13px;
-    letter-spacing: -0.08px;
-    padding: 4px 8px;
-    border-radius: 12px;
-    border: 0.7px solid #E5E7EB;
-    background-color: #FFFFFF;
-    color: #191F28;
-}
-
+.apply-chip,
 .cancel-chip {
     font-weight: 400;
     font-size: 13px;
