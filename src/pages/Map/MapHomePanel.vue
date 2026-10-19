@@ -22,15 +22,14 @@
     {{ errorMessage }}
   </v-alert>
 
-  <v-row no-gutters class="list-header">
-    {{ searched ? '검색 결과' : '주변' }}
-  </v-row>
-
+  
   <v-row no-gutters class="container-list">
+    <v-row no-gutters class="list-header">
+      {{ searched ? '검색 결과' : '주변' }}
+    </v-row>
+    
     <v-col v-for="place in places" :key="place.id" cols="12">
       <PlaceCard
-        v-for="place in places"
-        :key="place.id"
         :place="place"
         @select="handleEvent('select', $event)"
       />
@@ -180,18 +179,19 @@ function selectDestination(place) {
   opacity: 1;
 }
 .container-list {
+  display: block;
+  flex: 1 1 0;
+  min-height: 0;
   width: 100%;
-  height: 100%;
+  margin: 0;
   overflow-y: auto;
-  justify-content: center;
-  align-items: flex-start;
-  align-content: flex-start;
 }
 .list-header {
   width: 100%;
   font-size: 18px;
   font-weight: 600;
-  margin: 12px 12px 0px 12px;
+  margin: 0;
+  padding: 12px 12px 0;
 }
 .searchbox-list {
   margin: 12px;

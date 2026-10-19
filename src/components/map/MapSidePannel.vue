@@ -51,9 +51,21 @@ onUnmounted(() => {
 }
 
 .panel-content {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
     height: 100%;
     min-height: 0;
     overflow: hidden;
+}
+
+.panel-content > :deep(*) {
+    flex: 0 0 auto;
+}
+
+.panel-content > :deep(.container-list) {
+    flex: 1 1 0;
+    min-height: 0;
 }
 
 .map-side-panel.folded {
