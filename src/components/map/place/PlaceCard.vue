@@ -5,14 +5,14 @@
         style="cursor: pointer;"
     >
 
-        <!-- hover 시 나타나는 출발 버튼 -->
+        <!-- hover 시 나타나는 도착 버튼 -->
         <v-chip
-            class="depart-chip"
+            class="arrive-chip"
             variant="outlined" density="comfortable" rounded="circle" base-color="#127ab7" color="#127ab7"
             height="36" width="36"
             @click.stop="handleEvent('select')"
         >
-            출발
+            도착
         </v-chip>
 
         <div class="card-title">{{ props.place.title }}</div>
@@ -117,8 +117,8 @@ function handleEvent(action) {
     color: #4A5565;
 }
 
-/* ----- 출발 버튼 ----- */
-.depart-chip {
+/* ----- 도착 버튼 ----- */
+.arrive-chip {
     background-color: #FFFFFF;
     position: absolute;
     top: 20%;
@@ -144,7 +144,7 @@ function handleEvent(action) {
     background-color: #F3F4F6;
 }
 
-.place-card:hover .depart-chip {
+.place-card:hover .arrive-chip {
     opacity: 1;
     pointer-events: auto;
 }
