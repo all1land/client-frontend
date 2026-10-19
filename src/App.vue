@@ -125,10 +125,30 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch, computed } from "vue";
+import { onMounted, ref, watch, computed, provide } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { navigateTo, goBack } from '@/common/RouterUtil.js';
 import SideNavItem from '@/components/common/SideNavItem.vue';
+
+const currentLocation = ref(null);
+provide('currentLocation', currentLocation);
+
+function checkWhereMe() {
+  if (!navigator.geolocation) return;
+
+  navigator.geolocation.getCurrentPosition(
+    ({ coords }) => {
+      currentLocation.value = {
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      };
+    },
+    () => {
+      currentLocation.value = null;
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+  );
+}
 
 const router = useRouter();
 const route = useRoute();
@@ -214,6 +234,7 @@ const dialog = ref({
 onMounted(() => {
   console.log(import.meta.env)
   
+  checkWhereMe();
   // checkLogin();
   loadUserInfo(); // 컴포넌트 마운트 시 유저 정보 로드
 });
