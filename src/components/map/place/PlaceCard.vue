@@ -1,19 +1,19 @@
 <template>
     <v-card 
-        class="meeting-card"
+        class="place-card"
         variant="outlined"
         style="cursor: pointer;"
     >
 
         <!-- hover 시 나타나는 출발 버튼 -->
-        <v-btn
-            class="depart-btn"
+        <v-chip
+            class="depart-chip"
             variant="outlined" density="comfortable" rounded="circle" base-color="#127ab7" color="#127ab7"
             height="36" width="36"
             @click.stop="handleEvent('select')"
         >
             출발
-        </v-btn>
+        </v-chip>
 
         <div class="card-title">{{ props.place.title }}</div>
         <div class="card-description | mt-2">{{ props.place.description }}</div>
@@ -95,13 +95,14 @@ function handleEvent(action) {
     background-color: #FFFFFF;
 }
 
-.meeting-card {
+.place-card {
     padding: 12px;
     border: 0px solid #FFFFFF;
+    border-radius: 0px;
     background-color: #FFFFFF;
 }
 
-.meeting-card--selected {
+.place-card--selected {
     background-color: #F3F4F6;
 }
 
@@ -117,10 +118,10 @@ function handleEvent(action) {
 }
 
 /* ----- 출발 버튼 ----- */
-.depart-btn {
+.depart-chip {
     background-color: #FFFFFF;
     position: absolute;
-    top: 50%;
+    top: 20%;
     right: 8px;
     transform: translateY(-50%); 
     cursor: pointer;
@@ -133,14 +134,17 @@ function handleEvent(action) {
 
     height: 36px !important;
     width: 36px !important;
+    align-items: center;
+    justify-content: center;
 }
 
+
 /* 카드 hover */
-.meeting-card:hover {
+.place-card:hover {
     background-color: #F3F4F6;
 }
 
-.meeting-card:hover .depart-btn {
+.place-card:hover .depart-chip {
     opacity: 1;
     pointer-events: auto;
 }
