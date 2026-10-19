@@ -1,29 +1,22 @@
 <template>
-  
+  <div>
+    <ParkingCard
+      v-for="parking in items"
+      :key="parking.id"
+      :parking="parking"
+      :selected="parking.id === selectedId"
+      @select="$emit('select', $event)"
+    />
+  </div>
 </template>
 
 <script setup>
-// ----- 선언부 ----- //
-import { onMounted, onUnmounted, ref, computed, watch} from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { routes } from "@/router"
+import ParkingCard from '@/components/map/parking/ParkingCard.vue';
 
-// ----- 라이프 사이클 ----- //
-onMounted(() => {
-
+defineProps({
+  items: { type: Array, default: () => [] },
+  selectedId: { type: String, default: '' },
 });
 
-onUnmounted(() => {
-
-})
-
-// ----- 함수 정의 ----- //
-
-
-
-
+defineEmits(['select']);
 </script>
-
-<style scoped>
-
-</style>

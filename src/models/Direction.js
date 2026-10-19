@@ -1,8 +1,8 @@
-// src/models/Route.js
+// src/models/Direction.js
 
 import Place from './Place.js';
 
-export default class Route {
+export default class Direction {
   constructor({
     type = 'ROUTE_CAR',
     start = null,
@@ -41,6 +41,6 @@ export default class Route {
   }
 
   static from(data) {
-    return new Route(data);
+    return new Direction(data);
   }
 }

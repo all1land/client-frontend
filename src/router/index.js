@@ -41,6 +41,7 @@ const routes = [
       },
       {
         path: 'directions',
+        alias: 'direction',
         name: 'MapDirections',
         component: () => import('@/pages/Map/MapDirectionsPanel.vue')
       },
