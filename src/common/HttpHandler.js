@@ -133,7 +133,15 @@ class HttpClient {
       // 응답이 비어있을 경우 처리
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
-        return await response.json();
+        const result = await response.json();
+
+        if (result?.success === false) {
+          throw this.createResponseError(response, result);
+        }
+
+        // 공통 응답(success, code, message, data)을 유지합니다.
+        // 호출부에서는 response.data로 실제 데이터에 접근합니다.
+        return result;
       }
       
       return await response.text();
@@ -151,42 +159,64 @@ class HttpClient {
   }
 
   /**
+   * 공통 오류 코드와 HTTP 상태를 담은 에러 생성
+   * 서버 메시지가 있으면 우선 사용하고, 없으면 코드별 기본 메시지를 사용합니다.
+   * @param {Response} response - fetch 응답 객체
+   * @param {object} errorData - 공통 오류 응답
+   * @returns {Error}
+   */
+  createResponseError(response, errorData = {}) {
+    const code = errorData?.code;
+    const codeMessages = {
+      COMMON_400_002: '필수 좌표가 누락되었거나 좌표 범위를 벗어났습니다. 요청 값을 확인해주세요.',
+      ROUTE_400_001: 'TMAP 경로 요청이 거부되었습니다. 요청 값을 확인해주세요.',
+      ROUTE_502_001: '외부 경로 서비스 호출 또는 응답 처리에 실패했거나 경로 요약이 누락되었습니다.',
+      ROUTE_504_001: '외부 경로 서비스에 연결하지 못했거나 응답이 지연되었습니다. 잠시 후 다시 시도해주세요.',
+      COMMON_500_001: '서버에서 예기치 않은 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+    };
+    const statusMessages = {
+      400: '잘못된 요청입니다.',
+      401: '인증이 필요합니다. 다시 로그인해주세요.',
+      403: '접근 권한이 없습니다.',
+      404: '요청한 리소스를 찾을 수 없습니다.',
+      500: '서버 오류가 발생했습니다.',
+      502: '외부 서비스 응답 처리에 실패했습니다.',
+      504: '외부 서비스 연결에 실패했거나 응답 시간이 초과되었습니다.',
+    };
+    const message = errorData?.message || errorData?.detail ||
+      codeMessages[code] || statusMessages[response.status] ||
+      (response.ok ? '요청을 처리하지 못했습니다.' : `HTTP ${response.status}: ${response.statusText}`);
+    const error = new Error(message);
+    error.code = code;
+    error.status = response.status;
+    return error;
+  }
+
+  /**
    * 에러 처리
    * @param {Response} response - fetch 응답 객체
    */
   async handleError(response) {
-    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-    
+    let errorData;
+
     try {
-      const errorData = await response.json();
-      errorMessage = errorData.message || errorData.detail || errorMessage;
+      errorData = await response.json();
     } catch {
-      // JSON 파싱 실패 시 기본 메시지 사용
+      // JSON 파싱 실패 시 HTTP 상태별 기본 메시지 사용
     }
 
-    // 상태 코드별 처리
-    switch (response.status) {
-      case 400:
-        throw new Error(`잘못된 요청입니다: ${errorMessage}`);
-      case 401:
-        // 인증 실패 시 메모리/스토리지 토큰 모두 제거
-        this.setAuthToken(null);
-        try {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('user');
-        } catch (storageError) {
-          console.warn('[HTTP] 인증 정보 스토리지 정리 실패:', storageError);
-        }
-        throw new Error('인증이 필요합니다. 다시 로그인해주세요.');
-      case 403:
-        throw new Error('접근 권한이 없습니다.');
-      case 404:
-        throw new Error('요청한 리소스를 찾을 수 없습니다.');
-      case 500:
-        throw new Error('서버 오류가 발생했습니다.');
-      default:
-        throw new Error(errorMessage);
+    if (response.status === 401) {
+      // 인증 실패 시 메모리/스토리지 토큰 모두 제거
+      this.setAuthToken(null);
+      try {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
+      } catch (storageError) {
+        console.warn('[HTTP] 인증 정보 스토리지 정리 실패:', storageError);
+      }
     }
+
+    throw this.createResponseError(response, errorData);
   }
 
   /**
@@ -587,6 +617,9 @@ export async function listPlaces(params = {}) {
   const start = (page - 1) * limit;
 
   return {
+    success: true,
+    code: 'COMMON_200_001',
+    message: '성공적으로 요청을 처리했습니다.',
     data: {
       items: PLACE_MOCK_ITEMS.slice(start, start + limit),
       total: PLACE_MOCK_ITEMS.length,
@@ -619,6 +652,9 @@ export async function listParking(params = {}) {
   }
 
   return {
+    success: true,
+    code: 'COMMON_200_001',
+    message: '성공적으로 요청을 처리했습니다.',
     data: {
       items: findNearbyParkingLots(
         parkingLots,
@@ -631,12 +667,7 @@ export async function listParking(params = {}) {
 }
 
 
-// ----- 기존 #9 경로 API 호출 ----- //
-function requireRouteApi() {
-  if (!import.meta.env.VITE_API_BASE_URL) {
-    throw new Error('경로 API 서버 주소가 설정되지 않았습니다.');
-  }
-}
+// ----- 경로조회 API ----- //
 
 export async function getWalkingRoute(params = {}) {
   requireRouteApi();
