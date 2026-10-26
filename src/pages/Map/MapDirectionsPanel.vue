@@ -2,17 +2,17 @@
   <v-row no-gutters class="searchbox-list">
     <v-col cols="12">
       <v-text-field
-          v-model="search.departure.name"
+          v-model="departure.name"
           class="inputbox | search-upper"
           variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#364153" color="#364153"
-          hide-details
+          hide-details readonly
           placeholder="출발지 입력"
           @keydown.enter.prevent="handleEvent('search')"
       />
     </v-col>
     <v-col cols="12">
       <v-text-field
-          v-model="search.parking.name"
+          v-model="parking.name"
           class="inputbox | search-lower"
           variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#364153" color="#364153"
           hide-details
@@ -22,10 +22,10 @@
     </v-col>
     <v-col cols="12">
       <v-text-field
-          v-model="search.arrival.name"
+          v-model="arrival.name"
           class="inputbox | search-lower"
           variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#364153" color="#364153"
-          hide-details
+          hide-details readonly
           placeholder="도착지"
           @keydown.enter.prevent="handleEvent('search')"
       />
@@ -55,15 +55,15 @@
       />
     </v-col>
 
-    <v-col v-if="!parkingList.length" class="pa-3" cols="12">
-      조건에 맞는 주차장이 없습니다.
+    <v-col v-if="parkingLoading || parkingError || !parkingList.length" class="pa-3" cols="12">
+      {{ parkingLoading ? '주차장을 조회하고 있습니다.' : parkingError || '조건에 맞는 주차장이 없습니다.' }}
     </v-col>
   </v-row>
 </template>
 
 <script setup>
 // ----- 선언부 ----- //
-import { onMounted, onUnmounted, ref, computed, watch} from "vue";
+import { onMounted, onUnmounted, ref, computed, watch, inject} from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { routes } from "@/router"
 
@@ -71,63 +71,31 @@ import * as HttpHandler from '@/common/HttpHandler.js';
 import { routeHistory } from '@/common/MapHistory.js';
 import ParkingCard from '@/components/map/parking/ParkingCard.vue';
 
-const mockDeparture = '올포랜드 마곡본부';
+const currentLocation = inject('currentLocation', ref(null));
 
+const departure = ref({ lat: null, lng: null, name: null });
+const arrival = ref({ lat: null, lng: null, name: null });
+const parking = ref({ lat: null, lng: null, name: null });
 
-const parkingList = ref([]);
-
-const selectedParking = ref(null);
 const radiusMeters = ref(1000);
 
+const parkingList = ref([]);
+const parkingLoading = ref(false);
+const parkingError = ref('');
 
-const search = ref(createSearch());
+
 let parkingRequestId = 0;
+
+watch(currentLocation, () => getArrival(), { immediate: true, deep: true });
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
-
+  getStoredArrival();
 });
 
 onUnmounted(() => {
-
+  
 })
-
-
-
-watch(() => search.value.arrival, () => {
-  resetSearch();
-  fetchListParking();
-}, { deep: true, immediate: true });
-
-
-// ----- 함수 정의 ----- //
-
-function getStoredArrival() {
-  const empty = { lat: null, lng: null, name: '' };
-  try {
-    const stored = JSON.parse(localStorage.getItem('route-search'));
-    if (!stored || typeof stored !== 'object') return empty;
-    const { lat, lng, name } = stored;
-    if (
-      !Number.isFinite(lat) || lat < -90 || lat > 90 ||
-      !Number.isFinite(lng) || lng < -180 || lng > 180 ||
-      typeof name !== 'string'
-    ) return empty;
-    return { lat, lng, name };
-  } catch (error) {
-    console.error('도착지 불러오기 실패:', error);
-    return empty;
-  }
-}
-
-function createSearch() {
-  return {
-    departure: { lat: null, lng: null, name: mockDeparture },
-    arrival: getStoredArrival(),
-    parking: { lat: null, lng: null, name: '' },
-  };
-}
-
 
 // 버튼 클릭 및 카드 선택 이벤트 핸들러
 function handleEvent(action, payload) {
@@ -149,88 +117,47 @@ function handleEvent(action, payload) {
   }
 }
 
-function resetSearch() {
-  search.value.parking = { lat: null, lng: null, name: '' };
-  selectedParking.value = null;
+// 로컬 스토리지에서 도착지 정보를 가져오는 함수
+function getStoredArrival() {
+  try {
+    const storedArrival = JSON.parse(localStorage.getItem('route-search'));
+    if (storedArrival) {
+      arrival.value = storedArrival;
+    }
+  } catch (error) {
+    console.error('도착지 불러오기 실패:', error);
+    arrival.value = { lat: null, lng: null, name: null };
+  }
 }
 
-function selectPlace(parking) {
-  selectedParking.value = parking;
-  search.value.parking = {
-    lat: parking.lat ?? parking.latitude ?? null,
-    lng: parking.lng ?? parking.longitude ?? null,
-    name: parking.name ?? parking.title ?? parking.address ?? '',
+// 현재 위치를 기반으로 출발지 정보를 가져오는 함수
+function getArrival() {
+  const location = currentLocation.value;
+  if (
+    !Number.isFinite(location?.latitude) ||
+    !Number.isFinite(location?.longitude) ||
+    location.latitude < -90 || location.latitude > 90 ||
+    location.longitude < -180 || location.longitude > 180
+  ) {
+    departure.value = { lat: null, lng: null, name: '위치 확인 필요' };
+    return null;
+  }
+
+  // 현위치 이름은 올포랜드로 임시 고정
+  departure.value = {
+    lat: location.latitude,
+    lng: location.longitude,
+    name: '올포랜드',
   };
-}
-
-function findDirections() {
-  saveRouteHistory();
-  if (search.value.arrival.name.trim()) fetchListParking();
+  return departure.value;
 }
 
 function clearInputForm() {
-  search.value = createSearch();
-  selectedParking.value = null;
+  // departure.value = { lat: null, lng: null, name: null };
+  // arrival.value = { lat: null, lng: null, name: null };
+  parking.value = { lat: null, lng: null, name: null };
 }
 
-function saveRouteHistory() {
-  const snapshot = (location) => ({
-    lat: location.lat,
-    lng: location.lng,
-    name: location.name.trim(),
-  });
-  const departure = snapshot(search.value.departure);
-  const arrival = snapshot(search.value.arrival);
-  const parking = snapshot(search.value.parking);
-  if (!departure.name || !arrival.name) return;
-
-  routeHistory.add({
-    key: JSON.stringify([departure, parking, arrival]),
-    departure,
-    parking,
-    arrival,
-    parkingPlace: selectedParking.value ? { ...selectedParking.value } : null,
-  });
-}
-
-async function fetchListParking() {
-  const requestId = ++parkingRequestId;
-  const { lat, lng, name } = search.value.arrival;
-  if (!name.trim()) {
-    parkingList.value = [];
-    return;
-  }
-
-  // 도착지 좌표가 연결되기 전에는 목업 목록을 표시합니다.
-  if (lat == null || lng == null) {
-    parkingList.value = ['A', 'B', 'C'].map((suffix, index) => ({
-      id: `mock-parking-${index + 1}`,
-      name: `${name} 인근 주차장 ${suffix}`,
-      address: `${name} 인근 주차장 ${suffix}`,
-      description: '목업 주차장',
-      totalSpaces: 10 * (index + 1),
-      lat: null,
-      lng: null,
-    }));
-    return;
-  }
-
-  parkingList.value = [];
-  try {
-    const response = await HttpHandler.listParking({
-      destination: { latitude: lat, longitude: lng },
-      radiusMeters: radiusMeters.value,
-    });
-    if (requestId === parkingRequestId) {
-      parkingList.value = response?.data?.items || [];
-    }
-  } catch (error) {
-    if (requestId === parkingRequestId) {
-      console.error('주차장 목록 조회 실패:', error);
-      parkingList.value = [];
-    }
-  }
-}
 </script>
 
 <style scoped>
