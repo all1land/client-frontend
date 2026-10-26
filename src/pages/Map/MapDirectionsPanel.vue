@@ -69,6 +69,7 @@ import * as HttpHandler from '@/common/HttpHandler.js';
 import { routeHistory } from '@/common/MapHistory.js';
 import ParkingCard from '@/components/map/parking/ParkingCard.vue';
 
+const emit = defineEmits(['update-map-markers']);
 const currentLocation = inject('currentLocation', ref(null));
 
 const departure = ref({ lat: null, lng: null, name: null });
@@ -93,10 +94,33 @@ onMounted(() => {
 
 onUnmounted(() => {
   parkingRequestId++;
+  emit('update-map-markers', []);
 })
 
 // 출발지, 도착지, 주차지 변경 시 로컬 스토리지에 저장하는 함수 호출
 watch([departure, arrival, parking], () => updateRouteSearch(), { deep: true });
+
+// 지도 렌더링은 MapView에서 처리하고, 패널은 표시할 좌표와 타입을 전달합니다.
+watch([departure, arrival, parking, parkingList], () => {
+  const markers = parkingList.value
+    .filter((item) => parking.value.id == null || item.id !== parking.value.id)
+    .map((item) => ({
+      id: `parking-list-${item.id}`,
+      lat: item.lat ?? item.latitude,
+      lng: item.lng ?? item.longitude,
+      type: 'cus-parking-mark',
+      data: item,
+    }));
+
+  for (const [id, location, type] of [
+    ['departure', departure.value, 'cus-depart-chip'],
+    ['arrival', arrival.value, 'cus-arrival-chip'],
+    ['parking', parking.value, 'cus-parking-chip'],
+  ]) {
+    markers.push({ id, lat: location.lat, lng: location.lng, type, data: location });
+  }
+  emit('update-map-markers', markers);
+}, { deep: true, immediate: true });
 
 // 주차장 목록 안내 상태 계산
 watch(

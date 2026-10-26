@@ -2,7 +2,7 @@
   <div class="map-view">
 
     <MapSidePannel>
-      <router-view />
+      <router-view @update-map-markers="setMapMarkers" />
     </MapSidePannel>
 
     <MapTypeControl
@@ -11,9 +11,26 @@
     />
 
     <div ref="mapElement" class="map"></div>
+    <v-snackbar v-model="showLocationError" :timeout="6000" role="alert">
+      {{ locationError }}
+    </v-snackbar>
 
     <div class="map-bottom-right">
 
+      <div class="location-control">
+        <v-chip class="location-chip" size="small" variant="flat">접속 위치</v-chip>
+        <button
+          type="button"
+          class="location-button"
+          :disabled="locationLoading"
+          :aria-busy="locationLoading"
+          aria-label="접속 위치 다시 찾기"
+          @click="locateCurrentPosition"
+        >
+          <v-progress-circular v-if="locationLoading" indeterminate :size="20" :width="2" color="primary" />
+          <v-icon v-else icon="mdi-crosshairs-gps" size="20" />
+        </button>
+      </div>
       <div class="zoom-box">
         <button type="button" @click="zoomBy(1)">+</button>
         <input
@@ -38,8 +55,9 @@
 
 <script setup>
 // ----- 선언부 ----- //
-import { onMounted, onUnmounted, ref, shallowRef, provide } from "vue";
+import { onMounted, onUnmounted, ref, shallowRef, provide, watch, inject } from "vue";
 import { mapMeta, MAP_TYPE } from "@/common/MapMeta.js";
+import { drawMapMarker, clearMapMarkers } from '@/common/MapMarker.js';
 
 import { fromLonLat, toLonLat, } from "ol/proj";
 import { defaults as defaultControls, Attribution, ScaleLine } from "ol/control";
@@ -60,6 +78,11 @@ const emit = defineEmits([
 // 발산역 기준 좌표 [경도, 위도]
 const BALSAN_STATION = [126.8375, 37.5585];
 const DEFAULT_ZOOM = 16;
+const currentLocation = inject('currentLocation', ref(null));
+const locationLoading = ref(false);
+const locationError = ref('');
+const showLocationError = ref(false);
+let locationRequestId = 0;
 
 const mapElement = ref(null);
 const attributionElement = ref(null);
@@ -74,6 +97,9 @@ let baseTileLayer = null;
 
 const mapInstance = shallowRef(null);
 provide('parkingMap', mapInstance);
+const mapMarkers = ref([]);
+watch(mapInstance, () => drawMarkers());
+watch(mapMarkers, () => drawMarkers(), { deep: true });
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
@@ -82,14 +108,30 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  locationRequestId++;
   mapInstance.value = null;
   if (map) {
+    clearMapMarkers(map);
     map.setTarget(undefined);
     map = null;
   }
 });
 
 // ----- 함수 정의 ----- //
+
+function setMapMarkers(markers = []) {
+  mapMarkers.value = markers;
+}
+
+function drawMarkers() {
+  if (!map) return;
+  clearMapMarkers(map);
+  for (const marker of mapMarkers.value) {
+    if (!Number.isFinite(marker.lat) || !Number.isFinite(marker.lng) ||
+        marker.lat < -90 || marker.lat > 90 || marker.lng < -180 || marker.lng > 180) continue;
+    drawMapMarker(map, marker);
+  }
+}
 
 function initMap() {
   const meta = mapMeta.get();
@@ -137,6 +179,50 @@ function initMap() {
   });
 
   map.on("moveend", saveMapView);
+}
+
+function locateCurrentPosition() {
+  if (locationLoading.value || !map) return;
+  showLocationError.value = false;
+  locationError.value = '';
+  if (!navigator.geolocation) {
+    locationError.value = '이 브라우저는 현재 위치 조회를 지원하지 않습니다.';
+    showLocationError.value = true;
+    return;
+  }
+
+  const requestId = ++locationRequestId;
+  locationLoading.value = true;
+  navigator.geolocation.getCurrentPosition(
+    ({ coords }) => {
+      if (requestId !== locationRequestId || !map) return;
+      locationLoading.value = false;
+      currentLocation.value = { latitude: coords.latitude, longitude: coords.longitude };
+      const view = map.getView();
+      view.cancelAnimations();
+      view.animate({
+        center: fromLonLat([coords.longitude, coords.latitude], view.getProjection()),
+        zoom: Math.min(view.getMaxZoom(), Math.max(view.getMinZoom(), DEFAULT_ZOOM)),
+        duration: 600,
+      });
+    },
+    (error) => {
+      if (requestId !== locationRequestId || !map) return;
+      locationLoading.value = false;
+      switch (error.code) {
+        case 1:
+          locationError.value = '위치 접근이 차단되어 있습니다. 브라우저와 기기의 위치 정보 권한을 허용해주세요.';
+          break;
+        case 3:
+          locationError.value = '위치 조회 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.';
+          break;
+        default:
+          locationError.value = '현재 위치를 알 수 없습니다. 기기의 위치 설정과 연결 상태를 확인해주세요.';
+      }
+      showLocationError.value = true;
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+  );
 }
 
 function setZoom(value) {
@@ -219,6 +305,58 @@ function saveMapView() {
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
+}
+
+.location-control {
+  position: relative;
+  width: 36px;
+  height: 36px;
+}
+
+.location-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #ffffff;
+  border: 1px solid #dcdfe4;
+  border-radius: 6px;
+  color: #4b5565;
+  cursor: pointer;
+}
+
+.location-button:hover,
+.location-button:focus-visible {
+  background: #f0f7fc;
+  color: #127ab7;
+}
+
+.location-button:focus-visible {
+  outline: 2px solid #127ab7;
+  outline-offset: 2px;
+}
+
+.location-button:disabled {
+  cursor: wait;
+}
+
+.location-chip {
+  min-width: max-content;
+  align-items: center;
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.location-control:hover .location-chip,
+.location-control:focus-within .location-chip {
+  opacity: 1;
 }
 
 .zoom-box {
