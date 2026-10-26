@@ -66,11 +66,13 @@ import { useRouter, useRoute } from "vue-router";
 import { routes } from "@/router"
 
 import * as HttpHandler from '@/common/HttpHandler.js';
+import { createMapDraw } from '@/common/MapDraw.js';
 import { routeHistory } from '@/common/MapHistory.js';
 import ParkingCard from '@/components/map/parking/ParkingCard.vue';
 
 const emit = defineEmits(['update-map-markers']);
 const currentLocation = inject('currentLocation', ref(null));
+const mapInstance = inject('parkingMap', ref(null));
 
 const departure = ref({ lat: null, lng: null, name: null });
 const arrival = ref({ lat: null, lng: null, name: null });
@@ -83,6 +85,23 @@ const parkingLoading = ref(false);
 const parkingError = ref('');
 const ParkingErrMsg = ref('');
 let parkingRequestId = 0;
+let radiusDraw = null;
+
+watch(mapInstance, (map) => {
+  radiusDraw?.destroy();
+  radiusDraw = map ? createMapDraw(map, {
+    onRadiusChange(radius) {
+      radiusMeters.value = radius;
+    },
+  }) : null;
+  radiusDraw?.setCircle(arrival.value, radiusMeters.value);
+}, { immediate: true });
+
+watch([arrival, radiusMeters], () => {
+  radiusDraw?.setCircle(arrival.value, radiusMeters.value);
+}, { deep: true });
+
+watch(radiusMeters, () => fetchListParking());
 
 watch(currentLocation, () => getStoredDepart(), { immediate: true, deep: true });
 
@@ -93,6 +112,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  radiusDraw?.destroy();
   parkingRequestId++;
   emit('update-map-markers', []);
 })
