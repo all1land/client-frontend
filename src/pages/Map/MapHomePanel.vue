@@ -50,6 +50,7 @@ import * as HttpHandler from '@/common/HttpHandler.js';
 import { searchHistory } from '@/common/MapHistory.js';
 import PlaceCard from '@/components/map/place/PlaceCard.vue';
 
+const emit = defineEmits(['update-map-markers']);
 const router = useRouter();
 const keyword = ref(null);
 const search = ref({});
@@ -63,6 +64,31 @@ const loading = ref(false);
 const errorMessage = ref('');
 let placeList = [];
 
+// 현재 목록에 표시된 장소를 MapView의 공통 마커 레이어에 반영합니다.
+watch(places, (items) => {
+  const markers = [];
+  for (const place of items) {
+    const rawLat = place.lat ?? place.latitude ?? place.lot;
+    const rawLng = place.lng ?? place.longitude;
+    if (rawLat == null || rawLng == null ||
+        String(rawLat).trim() === '' || String(rawLng).trim() === '') continue;
+
+    const lat = Number(rawLat);
+    const lng = Number(rawLng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) ||
+        lat < -90 || lat > 90 || lng < -180 || lng > 180) continue;
+
+    markers.push({
+      id: `location-${place.id}`,
+      lat,
+      lng,
+      type: 'cus-location-mark',
+      data: place,
+    });
+  }
+  emit('update-map-markers', markers);
+}, { deep: true, immediate: true });
+
 // ----- 라이프 사이클 ----- //
 onMounted(async () => {
   updateHistory();
@@ -70,7 +96,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-
+  emit('update-map-markers', []);
 })
 
 // ----- 함수 정의 ----- //

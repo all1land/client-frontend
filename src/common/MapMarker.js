@@ -10,6 +10,7 @@ import arrivalIcon from '@/assets/icons/icon-arrival-chip.svg?url';
 import departIcon from '@/assets/icons/icon-depart-chip.svg?url';
 import parkingChipIcon from '@/assets/icons/icon-parking-chip.svg?url';
 import parkingMarkIcon from '@/assets/icons/icon-parking-mark.png?url';
+import locationMarkIcon from '@/assets/icons/icon-location-mark.png?url'; 
 
 // Vuetify 별명과 동일한 키를 사용하되 지도에는 이미지 URL을 전달합니다.
 const markerIcons = {
@@ -17,12 +18,15 @@ const markerIcons = {
   'cus-depart-chip': { src: departIcon, anchor: [0.5, 0.5] },
   'cus-parking-chip': { src: parkingChipIcon, anchor: [0.5, 0.5] },
   'cus-parking-mark': { src: parkingMarkIcon, anchor: [0.5, 1] },
+  'cus-location-mark': { src: locationMarkIcon, anchor: [0.5, 1] },
+
 };
 const markerTypes = {
   arrival: 'cus-arrival-chip',
   depart: 'cus-depart-chip',
   parking: 'cus-parking-chip',
   'parking-mark': 'cus-parking-mark',
+  'location-mark': 'cus-location-mark',
 };
 const mapLayers = new WeakMap();
 
