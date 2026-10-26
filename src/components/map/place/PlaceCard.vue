@@ -83,7 +83,7 @@ function handleEvent(action) {
   switch (action) {
     case 'click':
       emit('click', props.place);
-      focusMapLocation?.(props.place);
+      focusMapLocation?.(props.place, 'location');
       break;
 
     case 'select':

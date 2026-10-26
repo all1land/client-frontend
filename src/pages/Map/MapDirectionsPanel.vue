@@ -113,9 +113,9 @@ watch([departure, arrival, parking, parkingList], () => {
     }));
 
   for (const [id, location, type] of [
-    ['departure', departure.value, 'cus-depart-chip'],
-    ['arrival', arrival.value, 'cus-arrival-chip'],
-    ['parking', parking.value, 'cus-parking-chip'],
+    ['departure', departure.value, 'cus-depart-spotlight'],
+    ['arrival', arrival.value, 'cus-arrival-spotlight'],
+    ['parking', parking.value, 'cus-parking-spotlight'],
   ]) {
     markers.push({ id, lat: location.lat, lng: location.lng, type, data: location });
   }
