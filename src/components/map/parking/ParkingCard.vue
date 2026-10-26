@@ -73,7 +73,7 @@ function handleEvent(action) {
     
     case 'click':
       emit('click', props.parking);
-      focusMapLocation?.(props.parking);
+      focusMapLocation?.(props.parking, 'parking');
       break;
 
     case 'select':

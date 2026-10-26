@@ -99,8 +99,9 @@ const mapInstance = shallowRef(null);
 provide('parkingMap', mapInstance);
 provide('focusMapLocation', focusMapLocation);
 const mapMarkers = ref([]);
+const focusedMarkerId = ref(null);
 watch(mapInstance, () => drawMarkers());
-watch(mapMarkers, () => drawMarkers(), { deep: true });
+watch([mapMarkers, currentLocation, focusedMarkerId], () => drawMarkers(), { deep: true });
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
@@ -122,6 +123,7 @@ onUnmounted(() => {
 
 function setMapMarkers(markers = []) {
   mapMarkers.value = markers;
+  if (!markers.some((marker) => marker.id === focusedMarkerId.value)) focusedMarkerId.value = null;
 }
 
 function drawMarkers() {
@@ -130,7 +132,16 @@ function drawMarkers() {
   for (const marker of mapMarkers.value) {
     if (!Number.isFinite(marker.lat) || !Number.isFinite(marker.lng) ||
         marker.lat < -90 || marker.lat > 90 || marker.lng < -180 || marker.lng > 180) continue;
-    drawMapMarker(map, marker);
+    const type = marker.id === focusedMarkerId.value
+      ? marker.type.replace(/-mark$/, '-spotlight')
+      : marker.type;
+    drawMapMarker(map, { ...marker, type });
+  }
+  const location = currentLocation.value;
+  if (Number.isFinite(location?.latitude) && Number.isFinite(location?.longitude) &&
+      Math.abs(location.latitude) <= 90 && Math.abs(location.longitude) <= 180) {
+    drawMapMarker(map, { id: 'current-location', lat: location.latitude, lng: location.longitude,
+      type: 'cus-me-mark', data: location });
   }
 }
 
@@ -180,10 +191,11 @@ function initMap() {
   });
 
   map.on("moveend", saveMapView);
+  map.on('singleclick', handleMarkerClick);
 }
 
 // 카드 클릭과 현재 위치 버튼에 동일한 확대·이동 설정을 적용합니다.
-function focusMapLocation(location) {
+function focusMapLocation(location, markerKind) {
   if (!map || !location) return false;
   const rawLat = location.lat ?? location.latitude ?? location.lot;
   const rawLng = location.lng ?? location.longitude;
@@ -194,6 +206,12 @@ function focusMapLocation(location) {
   if (!Number.isFinite(lat) || !Number.isFinite(lng) ||
       lat < -90 || lat > 90 || lng < -180 || lng > 180) return false;
 
+  const selected = markerKind ? mapMarkers.value.find((marker) =>
+    marker.type.startsWith(`cus-${markerKind}-`) &&
+    (location.id != null ? marker.data?.id === location.id : marker.lat === lat && marker.lng === lng),
+  ) : null;
+  focusedMarkerId.value = selected?.id ?? null;
+
   const view = map.getView();
   view.cancelAnimations();
   view.animate({
@@ -202,6 +220,15 @@ function focusMapLocation(location) {
     duration: 600,
   });
   return true;
+}
+
+function handleMarkerClick(event) {
+  const feature = map.forEachFeatureAtPixel(event.pixel, (item) => {
+    if (/^cus-(location|parking)-(mark|spotlight)$/.test(item.get('type'))) return item;
+  }, { hitTolerance: 5 });
+  if (!feature) return;
+  const kind = feature.get('type').startsWith('cus-location-') ? 'location' : 'parking';
+  focusMapLocation(feature.get('data'), kind);
 }
 
 function locateCurrentPosition() {

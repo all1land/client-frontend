@@ -61,6 +61,7 @@ import { fromLonLat } from 'ol/proj';
 import ParkingList from '@/components/map/parking/ParkingList.vue';
 import ParkingRouteResult from '@/components/map/parking/ParkingRouteResult.vue';
 import HttpHandler from '@/common/HttpHandler.js';
+import { createMapDraw } from '@/common/MapDraw.js';
 
 // ----- 선언부 ----- //
 const mapInstance = inject('parkingMap');
@@ -85,7 +86,7 @@ const selectedId = ref('');
 const loading = ref(false);
 const errorMessage = ref('');
 
-const radiusOptions = [
+const presetRadiusOptions = [
   { title: '300m', value: 300 },
   { title: '500m', value: 500 },
   { title: '1km', value: 1000 },
@@ -99,6 +100,11 @@ const markerLayer = new VectorLayer({
   style: markerStyle,
 });
 
+const radiusOptions = computed(() => presetRadiusOptions.some((item) => item.value === radiusMeters.value)
+  ? presetRadiusOptions
+  : [...presetRadiusOptions, { title: radiusMeters.value.toLocaleString() + 'm', value: radiusMeters.value }]);
+
+let radiusDraw = null;
 let attachedMap = null;
 let requestId = 0;
 
@@ -109,6 +115,12 @@ const stopMapWatch = watch(mapInstance, (nextMap) => {
   if (!nextMap) return;
 
   attachedMap = nextMap;
+  radiusDraw = createMapDraw(attachedMap, {
+    onRadiusChange(radius) {
+      radiusMeters.value = radius;
+    },
+  });
+  updateRadiusCircle();
   attachedMap.addLayer(markerLayer);
   attachedMap.on('singleclick', handleMapClick);
   redrawMarkers();
@@ -116,8 +128,11 @@ const stopMapWatch = watch(mapInstance, (nextMap) => {
 
 watch(
   [destination, radiusMeters],
-  searchParking,
-  { immediate: true },
+  () => {
+    updateRadiusCircle();
+    searchParking();
+  },
+  { immediate: true, deep: true },
 );
 
 onBeforeUnmount(() => {
@@ -143,7 +158,13 @@ function markerStyle(feature) {
   });
 }
 
+function updateRadiusCircle() {
+  radiusDraw?.setCircle(destination.value, radiusMeters.value);
+}
+
 function detachMap() {
+  radiusDraw?.destroy();
+  radiusDraw = null;
   if (!attachedMap) return;
   attachedMap.un('singleclick', handleMapClick);
   attachedMap.removeLayer(markerLayer);
@@ -180,20 +201,29 @@ async function searchParking() {
   errorMessage.value = '';
   redrawMarkers();
 
-  if (!destination.value) return;
+  if (!destination.value) {
+    loading.value = false;
+    return;
+  }
 
   loading.value = true;
 
   try {
-    const response = await HttpHandler.listParking({
-      destination: destination.value,
-      radiusMeters: radiusMeters.value,
+    const response = await nearbyParking({
+      latitude: destination.value.latitude,
+      longitude: destination.value.longitude,
+      radius: radiusMeters.value,
     });
 
     if (currentRequest !== requestId) return;
 
-    items.value = response.data.items;
-    sourceTotal.value = response.data.sourceTotal;
+    items.value = response.data.map((item) => ({
+      ...item,
+      address: item.name,
+      road_name_address: item.roadNameAddress,
+      description: Number.isFinite(item.distanceMeters) ? Math.round(item.distanceMeters) + 'm' : '',
+    }));
+    sourceTotal.value = items.value.length;
 
     attachedMap?.getView().animate({
       center: fromLonLat([
