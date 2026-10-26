@@ -55,15 +55,15 @@
       />
     </v-col>
 
-    <v-col v-if="parkingLoading || parkingError || !parkingList.length" class="pa-3" cols="12">
-      {{ parkingLoading ? '주차장을 조회하고 있습니다.' : parkingError || '조건에 맞는 주차장이 없습니다.' }}
+    <v-col v-if="ParkingErrMsg" class="pa-3" cols="12">
+      {{ ParkingErrMsg }}
     </v-col>
   </v-row>
 </template>
 
 <script setup>
 // ----- 선언부 ----- //
-import { onMounted, onUnmounted, ref, computed, watch, inject} from "vue";
+import { onMounted, onUnmounted, ref, watch, inject} from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { routes } from "@/router"
 
@@ -82,20 +82,54 @@ const radiusMeters = ref(1000);
 const parkingList = ref([]);
 const parkingLoading = ref(false);
 const parkingError = ref('');
+const ParkingErrMsg = ref('');
 
-
-let parkingRequestId = 0;
-
-watch(currentLocation, () => getArrival(), { immediate: true, deep: true });
+watch(currentLocation, () => getStoredDepart(), { immediate: true, deep: true });
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
   getStoredArrival();
+  getStoredDepart();
 });
 
 onUnmounted(() => {
   
 })
+
+// 출발지, 도착지, 주차지 변경 시 로컬 스토리지에 저장하는 함수 호출
+watch([departure, arrival, parking], () => updateRouteSearch(), { deep: true });
+
+// 주차장 목록 안내 상태 계산
+watch(
+  [arrival, departure, parkingLoading, parkingError, parkingList],
+  () => {
+    let msg = '';
+    switch (true) {
+      case !arrival.value?.name?.trim():
+        msg = '도착지를 먼저 선택해주세요.';
+        break;
+      case !Number.isFinite(departure.value.lat) || !Number.isFinite(departure.value.lng):
+        msg = '현재 위치를 알 수 없습니다. 브라우저와 기기의 위치 정보 권한을 허용했는지 확인해주세요.';
+        break;
+      case parkingLoading.value:
+        msg = '주차장을 조회하고 있습니다.';
+        break;
+      case Boolean(parkingError.value):
+        msg = '조건에 맞는 주차장을 조회하지 못했습니다. 잠시 후 다시 시도해주세요.';
+        break;
+      case !parkingList.value.length:
+        msg = '조건에 맞는 주차장이 없습니다.';
+        break;
+      default:
+        break;
+    }
+    ParkingErrMsg.value = msg;
+  },
+  { deep: true, immediate: true },
+);
+
+// ----- 함수 정의 ----- //
+
 
 // 버튼 클릭 및 카드 선택 이벤트 핸들러
 function handleEvent(action, payload) {
@@ -105,7 +139,7 @@ function handleEvent(action, payload) {
       break;
 
     case 'select':
-      if (payload) selectPlace(payload);
+      if (payload) selectParking(payload);
       break;
 
     case 'clear':
@@ -131,7 +165,7 @@ function getStoredArrival() {
 }
 
 // 현재 위치를 기반으로 출발지 정보를 가져오는 함수
-function getArrival() {
+function getStoredDepart() {
   const location = currentLocation.value;
   if (
     !Number.isFinite(location?.latitude) ||
@@ -156,6 +190,19 @@ function clearInputForm() {
   // departure.value = { lat: null, lng: null, name: null };
   // arrival.value = { lat: null, lng: null, name: null };
   parking.value = { lat: null, lng: null, name: null };
+}
+
+function updateRouteSearch() {
+  try {
+    const routeSearch = {
+      departure: departure.value,
+      parking: parking.value,
+      arrival: arrival.value,
+    };
+    localStorage.setItem('route-search', JSON.stringify(routeSearch));
+  } catch (error) {
+    console.error('도착지 저장 실패:', error);
+  }
 }
 
 </script>
