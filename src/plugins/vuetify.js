@@ -13,12 +13,17 @@ import { createVuetify } from 'vuetify'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
 // SVG Icons (assets/icons)
-// import IconCalendar from '@/assets/icons/calender.svg?component'
+import IconArrivalChip from '@/assets/icons/icon-arrival-chip.svg?component'
+import IconDepartChip from '@/assets/icons/icon-depart-chip.svg?component'
+import IconParkingChip from '@/assets/icons/icon-parking-chip.svg?component'
+import IconParkingMark from '@/assets/icons/icon-parking-mark.png?component'
 
 const customAliases = {
   ...aliases,
-
-  // 'cus-calendar': IconCalendar,
+  'cus-arrival-chip': IconArrivalChip,
+  'cus-depart-chip': IconDepartChip,
+  'cus-parking-chip': IconParkingChip,
+  'cus-parking-mark': IconParkingMark,
 }
 
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
