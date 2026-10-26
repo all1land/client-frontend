@@ -7,7 +7,6 @@
           variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#364153" color="#364153"
           hide-details readonly
           placeholder="출발지 입력"
-          @keydown.enter.prevent="handleEvent('search')"
       />
     </v-col>
     <v-col cols="12">
@@ -17,7 +16,7 @@
           variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#364153" color="#364153"
           hide-details
           placeholder="주차장 선택"
-          @keydown.enter.prevent="handleEvent('search')"
+          @keydown.enter.prevent="handleEvent('select')"
       />
     </v-col>
     <v-col cols="12">
@@ -27,7 +26,6 @@
           variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#364153" color="#364153"
           hide-details readonly
           placeholder="도착지"
-          @keydown.enter.prevent="handleEvent('search')"
       />
     </v-col>
   </v-row>
@@ -147,7 +145,13 @@ function handleEvent(action, payload) {
       break;
 
     case 'select':
-      if (payload) selectParking(payload);
+      if (!payload) break;
+      parking.value = {
+        id: payload.id,
+        lat: payload.lat ?? payload.latitude ?? null,
+        lng: payload.lng ?? payload.longitude ?? null,
+        name: payload.name ?? payload.address ?? '',
+      };
       break;
 
     case 'clear':

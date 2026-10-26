@@ -104,14 +104,17 @@ function handleEvent(action, payload) {
       // 검색 결과가 한 곳이면 목적지로 바로 연결합니다.
       if (places.value.length === 1) selectDestination(places.value[0]);
       break;
+
     case 'select':
       selectDestination(payload);
       break;
+
     case 'clear':
       searchText.value = '';
       keyword.value = '';
       places.value = placeList;
       break;
+      
     default:
       console.error('알 수 없는 인증 액션 타입:', action);
   }
