@@ -1,0 +1,372 @@
+[
+  {
+    "id": "B553774:115-2-000010",
+    "externalId": "115-2-000010",
+    "providerCode": "B553774",
+    "name": "신방화역",
+    "longitude": 126.8177876,
+    "latitude": 37.5667867,
+    "address": "서울특별시 강서구 마곡동 739",
+    "totalSpaces": 199
+  },
+  {
+    "id": "B553774:115-2-000002",
+    "externalId": "115-2-000002",
+    "providerCode": "B553774",
+    "name": "개화역",
+    "longitude": 126.798212,
+    "latitude": 37.5778861,
+    "address": "서울특별시 강서구 개화동 664",
+    "totalSpaces": 483
+  },
+  {
+    "id": "B553774:115-2-000004",
+    "externalId": "115-2-000004",
+    "providerCode": "B553774",
+    "name": "가양3동",
+    "longitude": 126.859775,
+    "latitude": 37.560338,
+    "address": "서울특별시 강서구 가양동 1488-12",
+    "totalSpaces": 56
+  },
+  {
+    "id": "B553774:115-2-000009",
+    "externalId": "115-2-000009",
+    "providerCode": "B553774",
+    "name": "가양역",
+    "longitude": 126.853082,
+    "latitude": 37.56333,
+    "address": "서울특별시 강서구 가양동 1480-10",
+    "totalSpaces": 79
+  },
+  {
+    "id": "B553774:115-2-000003",
+    "externalId": "115-2-000003",
+    "providerCode": "B553774",
+    "name": "가양라이품",
+    "longitude": 126.841653,
+    "latitude": 37.57170967,
+    "address": "서울특별시 강서구 가양동 1457-1",
+    "totalSpaces": 38
+  },
+  {
+    "id": "B553774:115-2-000001",
+    "externalId": "115-2-000001",
+    "providerCode": "B553774",
+    "name": "개화산역",
+    "longitude": 126.80519,
+    "latitude": 37.57213001,
+    "address": "서울특별시 강서구 방화동 845",
+    "totalSpaces": 321
+  },
+  {
+    "id": "B553774:115-2-000006",
+    "externalId": "115-2-000006",
+    "providerCode": "B553774",
+    "name": "방화역(동)",
+    "longitude": 126.813315,
+    "latitude": 37.57729223,
+    "address": "서울특별시 강서구 방화동 830-4",
+    "totalSpaces": 66
+  },
+  {
+    "id": "B553774:115-2-000007",
+    "externalId": "115-2-000007",
+    "providerCode": "B553774",
+    "name": "방화역(서)",
+    "longitude": 126.812175,
+    "latitude": 37.577574,
+    "address": "서울특별시 강서구 방화동 829-1",
+    "totalSpaces": 69
+  },
+  {
+    "id": "3150000:115-2-000017",
+    "externalId": "115-2-000017",
+    "providerCode": "3150000",
+    "name": "화곡8-2",
+    "longitude": 126.850354,
+    "latitude": 37.537679,
+    "address": "서울특별시 강서구 초록마을로 126",
+    "totalSpaces": 109
+  },
+  {
+    "id": "3150000:115-3-000003",
+    "externalId": "115-3-000003",
+    "providerCode": "3150000",
+    "name": "등서초",
+    "longitude": 126.855038,
+    "latitude": 37.551884,
+    "address": "서울특별시 강서구 화곡로58길 86",
+    "totalSpaces": 32
+  },
+  {
+    "id": "3150000:115-2-000021",
+    "externalId": "115-2-000021",
+    "providerCode": "3150000",
+    "name": "화곡1-2",
+    "longitude": 126.8410246,
+    "latitude": 37.5338224,
+    "address": "서울특별시 강서구 화곡동 366-47",
+    "totalSpaces": 9
+  },
+  {
+    "id": "3150000:115-3-000001",
+    "externalId": "115-3-000001",
+    "providerCode": "3150000",
+    "name": "화곡4-1",
+    "longitude": 126.861044,
+    "latitude": 37.534301,
+    "address": "서울특별시 강서구 곰달래로57가길 20",
+    "totalSpaces": 202
+  },
+  {
+    "id": "3150000:115-2-000010",
+    "externalId": "115-2-000010",
+    "providerCode": "3150000",
+    "name": "화곡6-1",
+    "longitude": 126.848514,
+    "latitude": 37.553032,
+    "address": "서울특별시 강서구 우장산로 114",
+    "totalSpaces": 298
+  },
+  {
+    "id": "3150000:115-2-000011",
+    "externalId": "115-2-000011",
+    "providerCode": "3150000",
+    "name": "볏골공원",
+    "longitude": 126.844323,
+    "latitude": 37.541816,
+    "address": "서울특별시 강서구 까치산로4길 22",
+    "totalSpaces": 228
+  },
+  {
+    "id": "3150000:115-3-000002",
+    "externalId": "115-3-000002",
+    "providerCode": "3150000",
+    "name": "곰달래문화복지센터",
+    "longitude": 126.848898,
+    "latitude": 37.52906,
+    "address": "서울특별시 강서구 강서로5길 50",
+    "totalSpaces": 252
+  },
+  {
+    "id": "3150000:115-2-000013",
+    "externalId": "115-2-000013",
+    "providerCode": "3150000",
+    "name": "가로공원로지하",
+    "longitude": 126.837039,
+    "latitude": 37.537235,
+    "address": "서울특별시 강서구 화곡동 662-15",
+    "totalSpaces": 512
+  },
+  {
+    "id": "3150000:115-2-000018",
+    "externalId": "115-2-000018",
+    "providerCode": "3150000",
+    "name": "서울식물원 제2주차장",
+    "longitude": 126.835236,
+    "latitude": 37.572662,
+    "address": "서울특별시 강서구 마곡동 20-3",
+    "totalSpaces": 202
+  },
+  {
+    "id": "3150000:115-2-000001",
+    "externalId": "115-2-000001",
+    "providerCode": "3150000",
+    "name": "화곡본-2",
+    "longitude": 126.848448,
+    "latitude": 37.5443203,
+    "address": "서울특별시 강서구 초록마을로5길 43",
+    "totalSpaces": 100
+  },
+  {
+    "id": "3150000:115-2-000002",
+    "externalId": "115-2-000002",
+    "providerCode": "3150000",
+    "name": "화곡2-1",
+    "longitude": 126.852432,
+    "latitude": 37.536046,
+    "address": "서울특별시 강서구 강서로18아길 26-15",
+    "totalSpaces": 58
+  },
+  {
+    "id": "3150000:115-2-000003",
+    "externalId": "115-2-000003",
+    "providerCode": "3150000",
+    "name": "화곡3-1",
+    "longitude": 126.834727,
+    "latitude": 37.541769,
+    "address": "서울특별시 강서구 화곡로15길 40",
+    "totalSpaces": 99
+  },
+  {
+    "id": "3150000:115-2-000005",
+    "externalId": "115-2-000005",
+    "providerCode": "3150000",
+    "name": "화곡5-1",
+    "longitude": 126.839922,
+    "latitude": 37.5438705,
+    "address": "서울특별시 강서구 강서로36길 21",
+    "totalSpaces": 26
+  },
+  {
+    "id": "3150000:115-2-000006",
+    "externalId": "115-2-000006",
+    "providerCode": "3150000",
+    "name": "화곡5-2",
+    "longitude": 126.840763,
+    "latitude": 37.544352,
+    "address": "서울특별시 강서구 강서로34길 41-21",
+    "totalSpaces": 27
+  },
+  {
+    "id": "3150000:115-2-000007",
+    "externalId": "115-2-000007",
+    "providerCode": "3150000",
+    "name": "화곡5-3",
+    "longitude": 126.842258,
+    "latitude": 37.543454,
+    "address": "서울특별시 강서구 화곡로27가길 38",
+    "totalSpaces": 13
+  },
+  {
+    "id": "3150000:115-2-000008",
+    "externalId": "115-2-000008",
+    "providerCode": "3150000",
+    "name": "화곡7-1",
+    "longitude": 126.839155,
+    "latitude": 37.536016,
+    "address": "서울특별시 강서구 월정로32길 68",
+    "totalSpaces": 86
+  },
+  {
+    "id": "3150000:115-2-000009",
+    "externalId": "115-2-000009",
+    "providerCode": "3150000",
+    "name": "등촌2-1",
+    "longitude": 126.861316,
+    "latitude": 37.549799,
+    "address": "서울특별시 강서구 등촌로55길 33-16",
+    "totalSpaces": 110
+  },
+  {
+    "id": "3150000:115-2-000014",
+    "externalId": "115-2-000014",
+    "providerCode": "3150000",
+    "name": "화곡본-1",
+    "longitude": 126.849772,
+    "latitude": 37.539744,
+    "address": "서울특별시 강서구 초록마을로26길 48",
+    "totalSpaces": 98
+  },
+  {
+    "id": "3150000:115-2-000015",
+    "externalId": "115-2-000015",
+    "providerCode": "3150000",
+    "name": "화곡1-1",
+    "longitude": 126.839874,
+    "latitude": 37.5314204,
+    "address": "서울특별시 강서구 곰달래로15길 28",
+    "totalSpaces": 99
+  },
+  {
+    "id": "3150000:115-2-000016",
+    "externalId": "115-2-000016",
+    "providerCode": "3150000",
+    "name": "화곡8-1",
+    "longitude": 126.84884,
+    "latitude": 37.538511,
+    "address": "서울특별시 강서구 초록마을로22길 57-11",
+    "totalSpaces": 59
+  },
+  {
+    "id": "3150000:115-3-000004",
+    "externalId": "115-3-000004",
+    "providerCode": "3150000",
+    "name": "봉제산근린공원",
+    "longitude": 126.8510719,
+    "latitude": 37.5421344,
+    "address": "서울특별시 강서구 화곡동 산41-6",
+    "totalSpaces": 56
+  },
+  {
+    "id": "3150000:115-3-000005",
+    "externalId": "115-3-000005",
+    "providerCode": "3150000",
+    "name": "마곡안전체험관",
+    "longitude": 126.8258394,
+    "latitude": 37.5545411,
+    "address": "서울특별시 강서구 마곡중앙로 13",
+    "totalSpaces": 36
+  },
+  {
+    "id": "3150000:115-1-000020",
+    "externalId": "115-1-000020",
+    "providerCode": "3150000",
+    "name": "화곡1동 달구지길",
+    "longitude": 126.837414,
+    "latitude": 37.532988,
+    "address": "서울특별시 강서구 월정로28길 14",
+    "totalSpaces": 29
+  },
+  {
+    "id": "3150000:115-1-000019",
+    "externalId": "115-1-000019",
+    "providerCode": "3150000",
+    "name": "화곡1동 배다리서길",
+    "longitude": 126.847886,
+    "latitude": 37.528779,
+    "address": "서울특별시 강서구 강서로5나길 6",
+    "totalSpaces": 249
+  },
+  {
+    "id": "3150000:115-1-000021",
+    "externalId": "115-1-000021",
+    "providerCode": "3150000",
+    "name": "화곡2,4,8동 배다리동길",
+    "longitude": 126.849947,
+    "latitude": 37.529024,
+    "address": "서울특별시 강서구 국회대로7길 196",
+    "totalSpaces": 304
+  },
+  {
+    "id": "3150000:115-1-000022",
+    "externalId": "115-1-000022",
+    "providerCode": "3150000",
+    "name": "화곡6동 방죽길",
+    "longitude": 126.8524896,
+    "latitude": 37.554165,
+    "address": "서울특별시 강서구 공항대로46길 35",
+    "totalSpaces": 47
+  },
+  {
+    "id": "3150000:115-1-000023",
+    "externalId": "115-1-000023",
+    "providerCode": "3150000",
+    "name": "화곡6동 신학대길",
+    "longitude": 126.849532,
+    "latitude": 37.550966,
+    "address": "서울특별시 강서구 화곡로 302",
+    "totalSpaces": 29
+  },
+  {
+    "id": "3150000:115-1-000024",
+    "externalId": "115-1-000024",
+    "providerCode": "3150000",
+    "name": "등촌3동 구암길",
+    "longitude": 126.844636,
+    "latitude": 37.561217,
+    "address": "서울특별시 강서구 공항대로39길 74",
+    "totalSpaces": 49
+  },
+  {
+    "id": "3150000:115-1-000025",
+    "externalId": "115-1-000025",
+    "providerCode": "3150000",
+    "name": "등촌3동 꿈나무길",
+    "longitude": 126.847619,
+    "latitude": 37.560599,
+    "address": "서울특별시 강서구 공항대로 351-21",
+    "totalSpaces": 60
+  }
+]
