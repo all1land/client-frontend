@@ -1,5 +1,3 @@
-import parkingRows from '@/assets/parking/gangseo-parking-lots.json';
-import { normalizeParkingLots, findNearbyParkingLots } from '@/common/ParkingSearch.js';
 
 /**
  * HTTP 요청을 처리하는 클래스
@@ -9,7 +7,8 @@ import { normalizeParkingLots, findNearbyParkingLots } from '@/common/ParkingSea
 class HttpClient {
   constructor() {
     this.baseURL = import.meta.env.VITE_API_BASE_URL;
-    this.timeout = Number(import.meta.env.VITE_API_TIMEOUT);
+    const timeout = Number(import.meta.env.VITE_API_TIMEOUT);
+    this.timeout = Number.isFinite(timeout) && timeout > 0 ? timeout : 10000;
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -427,57 +426,6 @@ export async function deleteFile(params = {}) {
   });
 }
 
-// ----- 태그 관련 API ----- //
-export async function listTags(params = {}) {
-  return request('POST', '/tag/list', {
-    body: compact({
-      page: params.page,
-      limit: params.limit,
-      filter: {
-        parentCode: params.parentCode ?? null,
-        tagName: params.tagName ?? null,
-      },
-    }),
-  });
-}
-
-export async function getTag(params = {}) {
-  return request('POST', '/tag/get', {
-    body: compact({
-      id: params.id ?? params.tagId,
-    }),
-  });
-}
-
-export async function createTag(params = {}) {
-  return request('POST', '/tag/create', {
-    body: compact({
-      userId: params.userId,
-      parentCode: params.parentCode,
-      code: params.code,
-      tagName: params.tagName,
-    }),
-  });
-}
-
-export async function updateTag(params = {}) {
-  return request('POST', '/tag/update', {
-    body: compact({
-      id: params.id ?? params.tagId,
-      parentCode: params.parentCode,
-      tagName: params.tagName,
-    }),
-  });
-}
-
-export async function deleteTag(params = {}) {
-  return request('POST', '/tag/delete', {
-    body: compact({
-      id: params.id ?? params.tagId,
-    }),
-  });
-}
-
 // ----- 장소 API ----- //
 export async function listPlaces(params = {}) {
   const PLACE_MOCK_ITEMS = [
@@ -627,45 +575,34 @@ export async function listPlaces(params = {}) {
   };
 }
 
-
-// 사용 예시:
-// import { getMyProfile, updateProfile, getMeetings, createMeeting } from '@/common/HttpHandler.js';
-//
-// // 프로필 조회
-// const profile = await getMyProfile();
-//
-// // 프로필 업데이트
-// await updateProfile({ major: '예술공학부', grade: '3학년' });
-//
-// // 모임 목록 조회
-// const meetings = await getMeetings({ page: 1, limit: 10 });
-//
-// // 모임 생성
-// await createMeeting({ title: '점심 모임', description: '같이 밥 먹어요' });
-
-// ----- 주차장 데모 조회 ----- //
-export async function listParking(params = {}) {
-  const parkingLots = normalizeParkingLots(parkingRows);
-
-  if (parkingLots.length !== 37) {
-    throw new Error('#10의 실제 주차장 37건 연결을 확인하세요.');
-  }
-
-  return {
-    success: true,
-    code: 'COMMON_200_001',
-    message: '성공적으로 요청을 처리했습니다.',
-    data: {
-      items: findNearbyParkingLots(
-        parkingLots,
-        params.destination,
-        params.radiusMeters,
-      ),
-      sourceTotal: parkingLots.length,
+// ----- 주차장 조회 ----- //
+/**
+ * 주변 주차장 조회. response.data는 주차장 배열입니다.
+ * @param {{ latitude: number, longitude: number, radius: number }} params
+ * radius는 검색 반경(미터)입니다.
+ */
+export async function nearbyParking(params = {}) {
+  return request('GET', '/parking-lots/nearby', {
+    params: {
+      latitude: params.latitude,
+      longitude: params.longitude,
+      radius: params.radius,
     },
-  };
+  });
 }
 
+/**
+ * 주차장 상세 조회. response.data는 주차장 상세 객체입니다.
+ * @param {{ parkingLotId: number|string }} params
+ */
+export async function detailParking(params = {}) {
+  const parkingLotId = params.parkingLotId;
+  if (!/^\d+$/.test(String(parkingLotId)) || /^0+$/.test(String(parkingLotId))) {
+    throw new Error('유효한 주차장 ID가 필요합니다.');
+  }
+
+  return request('GET', `/parking-lots/${encodeURIComponent(parkingLotId)}`);
+}
 
 // ----- 경로조회 API ----- //
 
@@ -684,3 +621,20 @@ export async function getDrivingRoute(params = {}) {
     timeout: 10000,
   });
 }
+
+
+
+// 사용 예시:
+// import { getMyProfile, updateProfile, getMeetings, createMeeting } from '@/common/HttpHandler.js';
+//
+// // 프로필 조회
+// const profile = await getMyProfile();
+//
+// // 프로필 업데이트
+// await updateProfile({ major: '예술공학부', grade: '3학년' });
+//
+// // 모임 목록 조회
+// const meetings = await getMeetings({ page: 1, limit: 10 });
+//
+// // 모임 생성
+// await createMeeting({ title: '점심 모임', description: '같이 밥 먹어요' });
