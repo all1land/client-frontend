@@ -97,6 +97,7 @@ let baseTileLayer = null;
 
 const mapInstance = shallowRef(null);
 provide('parkingMap', mapInstance);
+provide('focusMapLocation', focusMapLocation);
 const mapMarkers = ref([]);
 watch(mapInstance, () => drawMarkers());
 watch(mapMarkers, () => drawMarkers(), { deep: true });
@@ -181,6 +182,28 @@ function initMap() {
   map.on("moveend", saveMapView);
 }
 
+// 카드 클릭과 현재 위치 버튼에 동일한 확대·이동 설정을 적용합니다.
+function focusMapLocation(location) {
+  if (!map || !location) return false;
+  const rawLat = location.lat ?? location.latitude ?? location.lot;
+  const rawLng = location.lng ?? location.longitude;
+  if (rawLat == null || rawLng == null ||
+      String(rawLat).trim() === '' || String(rawLng).trim() === '') return false;
+  const lat = Number(rawLat);
+  const lng = Number(rawLng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) ||
+      lat < -90 || lat > 90 || lng < -180 || lng > 180) return false;
+
+  const view = map.getView();
+  view.cancelAnimations();
+  view.animate({
+    center: fromLonLat([lng, lat], view.getProjection()),
+    zoom: Math.min(view.getMaxZoom(), Math.max(view.getMinZoom(), DEFAULT_ZOOM)),
+    duration: 600,
+  });
+  return true;
+}
+
 function locateCurrentPosition() {
   if (locationLoading.value || !map) return;
   showLocationError.value = false;
@@ -198,13 +221,7 @@ function locateCurrentPosition() {
       if (requestId !== locationRequestId || !map) return;
       locationLoading.value = false;
       currentLocation.value = { latitude: coords.latitude, longitude: coords.longitude };
-      const view = map.getView();
-      view.cancelAnimations();
-      view.animate({
-        center: fromLonLat([coords.longitude, coords.latitude], view.getProjection()),
-        zoom: Math.min(view.getMaxZoom(), Math.max(view.getMinZoom(), DEFAULT_ZOOM)),
-        duration: 600,
-      });
+      focusMapLocation(currentLocation.value);
     },
     (error) => {
       if (requestId !== locationRequestId || !map) return;
