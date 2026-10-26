@@ -7,7 +7,6 @@
           variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#364153" color="#364153"
           hide-details readonly
           placeholder="출발지 입력"
-          @keydown.enter.prevent="handleEvent('search')"
       />
     </v-col>
     <v-col cols="12">
@@ -17,7 +16,7 @@
           variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#364153" color="#364153"
           hide-details
           placeholder="주차장 선택"
-          @keydown.enter.prevent="handleEvent('search')"
+          @keydown.enter.prevent="handleEvent('select')"
       />
     </v-col>
     <v-col cols="12">
@@ -27,7 +26,6 @@
           variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#364153" color="#364153"
           hide-details readonly
           placeholder="도착지"
-          @keydown.enter.prevent="handleEvent('search')"
       />
     </v-col>
   </v-row>
@@ -71,6 +69,7 @@ import * as HttpHandler from '@/common/HttpHandler.js';
 import { routeHistory } from '@/common/MapHistory.js';
 import ParkingCard from '@/components/map/parking/ParkingCard.vue';
 
+const emit = defineEmits(['update-map-markers']);
 const currentLocation = inject('currentLocation', ref(null));
 
 const departure = ref({ lat: null, lng: null, name: null });
@@ -83,21 +82,45 @@ const parkingList = ref([]);
 const parkingLoading = ref(false);
 const parkingError = ref('');
 const ParkingErrMsg = ref('');
+let parkingRequestId = 0;
 
 watch(currentLocation, () => getStoredDepart(), { immediate: true, deep: true });
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
-  getStoredArrival();
-  getStoredDepart();
+  setInputForm();
+
 });
 
 onUnmounted(() => {
-  
+  parkingRequestId++;
+  emit('update-map-markers', []);
 })
 
 // 출발지, 도착지, 주차지 변경 시 로컬 스토리지에 저장하는 함수 호출
 watch([departure, arrival, parking], () => updateRouteSearch(), { deep: true });
+
+// 지도 렌더링은 MapView에서 처리하고, 패널은 표시할 좌표와 타입을 전달합니다.
+watch([departure, arrival, parking, parkingList], () => {
+  const markers = parkingList.value
+    .filter((item) => parking.value.id == null || item.id !== parking.value.id)
+    .map((item) => ({
+      id: `parking-list-${item.id}`,
+      lat: item.lat ?? item.latitude,
+      lng: item.lng ?? item.longitude,
+      type: 'cus-parking-mark',
+      data: item,
+    }));
+
+  for (const [id, location, type] of [
+    ['departure', departure.value, 'cus-depart-chip'],
+    ['arrival', arrival.value, 'cus-arrival-chip'],
+    ['parking', parking.value, 'cus-parking-chip'],
+  ]) {
+    markers.push({ id, lat: location.lat, lng: location.lng, type, data: location });
+  }
+  emit('update-map-markers', markers);
+}, { deep: true, immediate: true });
 
 // 주차장 목록 안내 상태 계산
 watch(
@@ -130,6 +153,13 @@ watch(
 
 // ----- 함수 정의 ----- //
 
+function setInputForm() {
+  getStoredArrival();
+  getStoredDepart();
+
+  // -> 위의 두개 처리 후에 fetchListParking 호출
+  fetchListParking();
+}
 
 // 버튼 클릭 및 카드 선택 이벤트 핸들러
 function handleEvent(action, payload) {
@@ -139,7 +169,13 @@ function handleEvent(action, payload) {
       break;
 
     case 'select':
-      if (payload) selectParking(payload);
+      if (!payload) break;
+      parking.value = {
+        id: payload.id,
+        lat: payload.lat ?? payload.latitude ?? null,
+        lng: payload.lng ?? payload.longitude ?? null,
+        name: payload.name ?? payload.address ?? '',
+      };
       break;
 
     case 'clear':
@@ -156,7 +192,7 @@ function getStoredArrival() {
   try {
     const storedArrival = JSON.parse(localStorage.getItem('route-search'));
     if (storedArrival) {
-      arrival.value = storedArrival;
+      arrival.value = storedArrival.arrival ?? storedArrival;
     }
   } catch (error) {
     console.error('도착지 불러오기 실패:', error);
@@ -202,6 +238,53 @@ function updateRouteSearch() {
     localStorage.setItem('route-search', JSON.stringify(routeSearch));
   } catch (error) {
     console.error('도착지 저장 실패:', error);
+  }
+}
+
+async function fetchListParking() {
+  const requestId = ++parkingRequestId;
+  const { lat, lng } = arrival.value;
+  const radius = radiusMeters.value;
+  parkingList.value = [];
+  parkingError.value = '';
+  parkingLoading.value = false;
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) ||
+      lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    parkingError.value = '도착지 좌표를 확인해주세요.';
+    return;
+  }
+  if (!Number.isFinite(radius) || radius <= 0) {
+    parkingError.value = '검색 반경을 확인해주세요.';
+    return;
+  }
+
+  parkingLoading.value = true;
+  try {
+    const response = await HttpHandler.nearbyParking({
+      latitude: lat,
+      longitude: lng,
+      radius,
+    });
+    if (requestId !== parkingRequestId) return;
+
+    parkingList.value = response.data.map((item) => ({
+      ...item,
+      lat: item.latitude,
+      lng: item.longitude,
+      address: item.name,
+      road_name_address: item.roadNameAddress,
+      description: Number.isFinite(item.distanceMeters)
+        ? `도착지에서 ${Math.round(item.distanceMeters)}m`
+        : '',
+    }));
+  } catch (error) {
+    if (requestId !== parkingRequestId) return;
+    parkingError.value = error.message || '주차장 목록 조회에 실패했습니다.';
+  } finally {
+    if (requestId === parkingRequestId) {
+      parkingLoading.value = false;
+    }
   }
 }
 

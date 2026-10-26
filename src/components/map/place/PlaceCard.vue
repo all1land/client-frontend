@@ -3,6 +3,10 @@
         class="place-card"
         variant="outlined"
         style="cursor: pointer;"
+        tabindex="0"
+        @click="handleEvent('click')"
+        @keydown.enter.self.prevent="handleEvent('click')"
+        @keydown.space.self.prevent="handleEvent('click')"
     >
 
         <!-- hover 시 나타나는 도착 버튼 -->
@@ -50,7 +54,7 @@
 
 <script setup>
 // ----- 선언부 ----- //
-import { onMounted, onUnmounted, ref, computed, watch} from "vue";
+import { onMounted, onUnmounted, ref, computed, watch, inject} from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { routes } from "@/router"
 
@@ -60,7 +64,8 @@ const props = defineProps({
     required: true,
   }
 });
-const emit = defineEmits(["select"]);
+const emit = defineEmits(["select", "click"]);
+const focusMapLocation = inject('focusMapLocation', null);
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
@@ -76,6 +81,11 @@ onUnmounted(() => {
 // 버튼 클릭 이벤트 핸들러
 function handleEvent(action) {
   switch (action) {
+    case 'click':
+      emit('click', props.place);
+      focusMapLocation?.(props.place);
+      break;
+
     case 'select':
         console.log('select action triggered');
         emit("select", props.place);

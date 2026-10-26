@@ -49,21 +49,31 @@
 이 프로젝트는 `Vuetify`와 `Vue.js`를 기반으로 하고 있습니다. 
 
 
-### 설치
+### 프론트엔드 실행 방법
 
-1. 레포 클론하기
-   ```sh
-   git clone {github repo link}
+프로젝트 폴더에서 아래 순서로 실행합니다. API를 사용하려면 백엔드가 `http://localhost:8080`에서 실행 중이어야 합니다.
+
+1. 프로젝트 루트의 `.env` 파일에 API 주소를 추가합니다.
+
+   ```dotenv
+   VITE_API_BASE_URL=http://localhost:8080/api
    ```
-2. NPM 패키지 설치
+
+2. 의존성 패키지를 설치합니다.
+
    ```sh
    npm install
    ```
-<!-- 4. Change git remote url to avoid accidental pushes to base project
+
+3. 개발 서버를 실행합니다.
+
    ```sh
-   git remote set-url origin github_username/repo_name
-   git remote -v # confirm the changes
-   ``` -->
+   npm run dev
+   ```
+
+4. 터미널에 표시되는 `Local` 주소를 브라우저에서 엽니다.
+
+`.env`를 변경한 경우 개발 서버를 재시작해주세요.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
