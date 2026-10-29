@@ -3,8 +3,9 @@
     <v-col cols="12">
       <v-text-field
           v-model="departure.name"
-          class="inputbox | search-upper"
-          variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#364153" color="#364153"
+          prepend-inner-icon="mdi-circle-outline"
+          class="inputbox | search-dpt"
+          variant="outlined" density="compact" rounded="s" bg-color="#ffffff" base-color="#364153" color="#364153"
           hide-details readonly
           placeholder="출발지 입력"
       />
@@ -12,8 +13,9 @@
     <v-col cols="12">
       <v-text-field
           v-model="parking.name"
-          class="inputbox | search-lower"
-          variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#364153" color="#364153"
+          prepend-inner-icon="mdi-circle-outline"
+          class="inputbox | search-pk"
+          variant="outlined" density="compact" rounded="s" bg-color="#ffffff" base-color="#364153" color="#364153"
           hide-details
           placeholder="주차장 선택"
           @keydown.enter.prevent="handleEvent('select')"
@@ -22,8 +24,9 @@
     <v-col cols="12">
       <v-text-field
           v-model="arrival.name"
-          class="inputbox | search-lower"
-          variant="outlined" density="compact" rounded="m" bg-color="#ffffff" base-color="#364153" color="#364153"
+          prepend-inner-icon="mdi-circle-outline"
+          class="inputbox | search-arv"
+          variant="outlined" density="compact" rounded="s" bg-color="#ffffff" base-color="#364153" color="#364153"
           hide-details readonly
           placeholder="도착지"
       />
@@ -311,33 +314,64 @@ async function fetchListParking() {
 </script>
 
 <style scoped>
-.search-upper :deep(.v-field__input) {
+
+.inputbox :deep(.v-field) {
+  --field-radius: 0;
+  border-radius: 0 !important;
+}
+.inputbox :deep(.v-field--focused) {
+  position: relative;
+  z-index: 1;
+}
+
+.search-dpt :deep(.v-field) {
+  border-radius: 4px 4px 0 0 !important;
+}
+.search-arv :deep(.v-field) {
+  border-radius: 0 0 4px 4px !important;
+}
+
+.search-pk,
+.search-arv {
+  margin-top: -2px;
+}
+
+.search-dpt :deep(.v-field__input) {
   color: #364153 !important;
   font-size: 16px !important;
 }
-.search-lower :deep(.v-field__input) {
+.search-pk :deep(.v-field__input) {
+  color: #364153 !important;
+  font-size: 16px !important;
+}
+.search-arv :deep(.v-field__input) {
   color: #364153 !important;
   font-size: 16px !important;
 }
 
-.search-upper :deep(.v-field__input::placeholder) {
+.inputbox :deep(.v-field__input::placeholder) {
   color: #364153 !important;
   font-size: 16px !important;
+}
+.inputbox :deep(.v-field__prepend-inner > .v-icon) {
+  font-size: 12px !important;
+  width: 12px !important;
+  height: 12px !important;
   opacity: 1;
 }
-.search-lower :deep(.v-field__input::placeholder) {
-  color: #364153 !important;
-  font-size: 16px !important;
-  opacity: 1;
+.search-dpt :deep(.v-icon) {
+  color: #8AB63F !important;
+}
+.search-pk :deep(.v-icon) {
+  color: #228CCA !important;
+}
+.search-arv :deep(.v-icon) {
+  color: #F56652 !important;
 }
 
-.search-upper :deep(.v-icon) {
-  color: #364153 !important;
-  opacity: 1;
-}
-.search-lower :deep(.v-icon) {
-  color: #364153 !important;
-  opacity: 1;
+.searchbox-list {
+  margin: 12px;
+  margin-bottom: 8px;
 }
 
 .container-list {
@@ -354,8 +388,5 @@ async function fetchListParking() {
   font-weight: 600;
   margin: 12px 12px 0px 12px;
 }
-.searchbox-list {
-  margin: 12px;
-  margin-bottom: 8px;
-}
+
 </style>
