@@ -191,6 +191,8 @@ function initMap() {
   });
 
   map.on("moveend", saveMapView);
+  map.on("change:size", saveMapView);
+  saveMapView();
   map.on('singleclick', handleMarkerClick);
 }
 
@@ -314,16 +316,27 @@ function saveMapView() {
     return;
   }
 
-  const view =  map.getView();
+  const view = map.getView();
   const center = view.getCenter();
+  const size = map.getSize();
 
-  if (!center) {
+  if (!center || !size || size[0] <= 0 || size[1] <= 0) {
     return;
   }
 
+  // 지도 투영 좌표의 화면 범위를 경위도로 변환해 저장한다.
+  const projection = view.getProjection();
+  const extent = view.calculateExtent(size);
+  const bottomLeft = toLonLat([extent[0], extent[1]], projection);
+  const topRight = toLonLat([extent[2], extent[3]], projection);
+
   mapMeta.updateView({
-    center: toLonLat(center),
+    center: toLonLat(center, projection),
     zoom: view.getZoom(),
+    minLat: bottomLeft[1],
+    minLon: bottomLeft[0],
+    maxLat: topRight[1],
+    maxLon: topRight[0],
   });
 }
 </script>

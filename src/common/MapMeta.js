@@ -40,6 +40,11 @@ const DEFAULT_MAP_META = {
     zoom: 12,
     minZoom: 0,
     maxZoom: 19,
+    // 현재 화면 범위의 경위도. 지도 크기가 확인되기 전에는 비워 둔다.
+    minLat: null,
+    minLon: null,
+    maxLat: null,
+    maxLon: null,
   },
 
   projection: 'EPSG:3857',
@@ -71,7 +76,7 @@ class MapMeta {
         tileSources[mapType] = {
           ...defaultSource,
           ...savedSource,
-          url: !savedSource.url || isLegacyTerrainUrl
+          url: !savedSource.url || isLegacyTerrainUrl || /^https?:\/\/api\.vworld\.kr\/req\/wmts\//.test(savedSource.url)
             ? defaultSource.url
             : savedSource.url,
           maxZoom: Math.min(savedSource.maxZoom ?? defaultSource.maxZoom, defaultSource.maxZoom),
@@ -138,6 +143,10 @@ class MapMeta {
   updateView({
     center,
     zoom,
+    minLat,
+    minLon,
+    maxLat,
+    maxLon,
   }) {
     const current = this.get();
 
@@ -152,6 +161,11 @@ class MapMeta {
         ...(zoom !== undefined && {
           zoom,
         }),
+
+        ...(minLat !== undefined && { minLat }),
+        ...(minLon !== undefined && { minLon }),
+        ...(maxLat !== undefined && { maxLat }),
+        ...(maxLon !== undefined && { maxLon }),
       },
     });
   }
