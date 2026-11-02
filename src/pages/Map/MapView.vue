@@ -1,8 +1,16 @@
 <template>
   <div class="map-view">
 
-    <MapSidePannel>
-      <router-view @update-map-markers="setMapMarkers" @update-map-route="setMapRoute" />
+    <MapSidePannel ref="sidePanel">
+      <router-view
+        @update-map-markers="setMapMarkers"
+        @update-map-route="setMapRoute"
+        @show-detail="onShowDetail"
+        @close-detail="sidePanel?.closeDetail()"
+      />
+      <template #detail="{ detail }">
+        <ParkingDetailCard :parking="detail" />
+      </template>
     </MapSidePannel>
 
     <MapTypeControl
@@ -72,6 +80,7 @@ import XYZ from "ol/source/XYZ";
 import "ol/ol.css";
 
 import MapSidePannel from "@/components/map/MapSidePannel.vue";
+import ParkingDetailCard from '@/components/map/parking/ParkingDetailCard.vue';
 import MapTypeControl from "@/components/map/hud/MapTypeControl.vue";
 
 const emit = defineEmits([
@@ -88,6 +97,13 @@ const locationError = ref('');
 const showLocationError = ref(false);
 let locationRequestId = 0;
 
+const sidePanel = ref(null);
+
+function onShowDetail(parking) {
+  if (parking?.id == null) return;
+  console.log('[MapView] show-detail', parking?.id, 'sidePanel:', sidePanel.value);
+  sidePanel.value?.openDetail({ id: parking.id });
+}
 const mapElement = ref(null);
 const attributionElement = ref(null);
 const scaleElement = ref(null);
@@ -378,10 +394,16 @@ function saveMapView() {
 </script>
 
 <style scoped>
+:global(html:has(.map-view)) {
+  overflow: hidden;
+}
+
 .map-view {
   position: relative;
   width: 100%;
   height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .map {

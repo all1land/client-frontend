@@ -53,6 +53,7 @@
       <ParkingCard 
         :parking="parking"
         @select="handleEvent('select', $event)"
+        @click="handleEvent('detail', $event)"
       />
     </v-col>
   </v-row>
@@ -69,7 +70,7 @@ import { createMapDraw } from '@/common/MapDraw.js';
 import { routeHistory } from '@/common/MapHistory.js';
 import ParkingCard from '@/components/map/parking/ParkingCard.vue';
 
-const emit = defineEmits(['update-map-markers', 'update-map-route']);
+const emit = defineEmits(['update-map-markers', 'update-map-route', 'show-detail', 'close-detail']);
 const currentLocation = inject('currentLocation', ref(null));
 const mapInstance = inject('parkingMap', ref(null));
 
@@ -115,6 +116,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  emit('close-detail');
   radiusDraw?.destroy();
   emit('update-map-route', null);
   routesRequestId++;
@@ -201,6 +203,10 @@ function handleEvent(action, payload) {
       fetchGetRoutes();
       break;
 
+    case 'detail':
+      if (payload?.id != null) emit('show-detail', payload);
+      break;
+
     case 'select':
       if (!payload) break;
       parking.value = {
@@ -209,10 +215,12 @@ function handleEvent(action, payload) {
         lng: payload.lng ?? payload.longitude ?? null,
         name: payload.name ?? payload.address ?? '',
       };
+      if (payload.id != null) emit('show-detail', payload);
       break;
 
     case 'clear':
       clearInputForm();
+      emit('close-detail');
       break;
 
     default:

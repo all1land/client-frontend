@@ -41,11 +41,11 @@
       :selected-id="selectedId"
       @select="selectParking"
     />
-    <ParkingRouteResult
+    <!-- <ParkingRouteResult
       v-if="selectedParking"
       :parking="selectedParking"
       :destination="destination"
-    />
+    /> -->
   </section>
 </template>
 
@@ -59,11 +59,12 @@ import { Style, Circle as CircleStyle, Fill, Stroke } from 'ol/style';
 import { fromLonLat } from 'ol/proj';
 
 import ParkingList from '@/components/map/parking/ParkingList.vue';
-import ParkingRouteResult from '@/components/map/parking/ParkingRouteResult.vue';
 import HttpHandler from '@/common/HttpHandler.js';
 import { createMapDraw } from '@/common/MapDraw.js';
 
 // ----- 선언부 ----- //
+const emit = defineEmits(['show-detail', 'close-detail']);
+
 const mapInstance = inject('parkingMap');
 
 if (!mapInstance) {
@@ -76,9 +77,7 @@ const props = defineProps({
 
 const destination = computed(() => props.selectedDestination);
 
-const selectedParking = computed(() =>
-  items.value.find((item) => item.id === selectedId.value) ?? null,
-);
+
 const radiusMeters = ref(1000);
 const items = ref([]);
 const sourceTotal = ref(0);
@@ -137,6 +136,7 @@ watch(
 
 onBeforeUnmount(() => {
   requestId += 1;
+  emit('close-detail');    
   stopMapWatch();
   detachMap();
 });
@@ -195,8 +195,12 @@ function handleMapClick(event) {
 
 async function searchParking() {
   const currentRequest = ++requestId;
+  
+  if (selectedId.value) emit('close-detail');
+
   selectedId.value = '';
   items.value = [];
+
   sourceTotal.value = 0;
   errorMessage.value = '';
   redrawMarkers();
@@ -277,7 +281,17 @@ function selectParking(parking) {
     center: fromLonLat([parking.longitude, parking.latitude]),
     duration: 300,
   });
+
+  console.log('[MapParkingPanel] emit show-detail', parking.id);
+  emit('show-detail', parking);
 }
+
+function clearSelection() {
+  selectedId.value = '';
+  markerLayer.changed();
+}
+
+
 </script>
 
 <style scoped>
