@@ -79,9 +79,9 @@ function handleEvent(action) {
   switch (action) {
     
     case 'click':
-      emit('click', props.parking);
-      focusMapLocation?.(props.parking, 'parking');
-      break;
+        emit('click', props.parking);
+        focusMapLocation?.(props.parking, 'parking');
+        break;
 
     case 'select':
         emit("select", props.parking);
@@ -127,7 +127,7 @@ function handleEvent(action) {
 .arrive-chip {
     background-color: #FFFFFF;
     position: absolute;
-    top: 20%;
+    top: 32px;
     right: 8px;
     transform: translateY(-50%); 
     cursor: pointer;

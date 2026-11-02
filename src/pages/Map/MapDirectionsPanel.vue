@@ -215,7 +215,7 @@ function handleEvent(action, payload) {
         lng: payload.lng ?? payload.longitude ?? null,
         name: payload.name ?? payload.address ?? '',
       };
-      if (payload.id != null) emit('show-detail', payload);
+      if (payload.id != null) emit('close-detail', payload);
       break;
 
     case 'clear':
