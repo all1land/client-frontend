@@ -26,7 +26,7 @@
           />
         </div>
 
-        <div class="detail-body">
+        <div class="detail-body | pl-4 | pr-4 | pb-4">
           <slot name="detail" :detail="detailData" :close="closeDetail" />
         </div>
       </div>
@@ -144,6 +144,7 @@ defineExpose({ openDetail, closeDetail });
   width: 300px;
   height: calc(100% - 32px);
   min-height: 0;
+
   margin: 16px 0 16px 16px;
   border-radius: 8px;
 
