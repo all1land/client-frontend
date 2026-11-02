@@ -306,9 +306,15 @@ async function fetchListParking() {
       lat: item.latitude,
       lng: item.longitude,
       address: item.name,
-      road_name_address: item.roadNameAddress,
+      roadNameAddress: item.roadNameAddress,
+      totalSpaces: item.totalSpaces,
+
+      //  TODO 공통코드 불러와 맵핑하여 사용
+      category: item.categoryCode || '주차장',
+      parkingType: item.parkingTypeCode || '',
+      
       description: Number.isFinite(item.distanceMeters)
-        ? `도착지에서 ${Math.round(item.distanceMeters)}m`
+        ? `${Math.round(item.distanceMeters)}m`
         : '',
     }));
   } catch (error) {
