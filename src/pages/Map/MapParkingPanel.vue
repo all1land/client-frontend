@@ -220,7 +220,7 @@ async function searchParking() {
     items.value = response.data.map((item) => ({
       ...item,
       address: item.name,
-      road_name_address: item.roadNameAddress,
+      road_name_address: item.displayAddress ?? item.roadNameAddress ?? item.lotNumberAddress ?? '-',
       description: Number.isFinite(item.distanceMeters) ? Math.round(item.distanceMeters) + 'm' : '',
     }));
     sourceTotal.value = items.value.length;
