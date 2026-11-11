@@ -296,7 +296,7 @@ async function fetchListParking() {
       lat: item.latitude,
       lng: item.longitude,
       address: item.name,
-      road_name_address: item.roadNameAddress,
+      road_name_address: item.displayAddress ?? item.roadNameAddress ?? item.lotNumberAddress ?? '-',
       description: Number.isFinite(item.distanceMeters)
         ? `도착지에서 ${Math.round(item.distanceMeters)}m`
         : '',
