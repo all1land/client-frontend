@@ -1,8 +1,16 @@
 <template>
   <div class="map-view">
 
-    <MapSidePannel>
-      <router-view @update-map-markers="setMapMarkers" />
+    <MapSidePannel ref="sidePanel">
+      <router-view
+        @update-map-markers="setMapMarkers"
+        @update-map-route="setMapRoute"
+        @show-detail="onShowDetail"
+        @close-detail="sidePanel?.closeDetail()"
+      />
+      <template #detail="{ detail }">
+        <ParkingDetailCard :parking="detail" />
+      </template>
     </MapSidePannel>
 
     <MapTypeControl
@@ -13,6 +21,9 @@
     <div ref="mapElement" class="map"></div>
     <v-snackbar v-model="showLocationError" :timeout="6000" role="alert">
       {{ locationError }}
+    </v-snackbar>
+    <v-snackbar v-model="showRouteError" :timeout="6000" role="alert">
+      {{ mapRouteError }}
     </v-snackbar>
 
     <div class="map-bottom-right">
@@ -58,6 +69,7 @@
 import { onMounted, onUnmounted, ref, shallowRef, provide, watch, inject } from "vue";
 import { mapMeta, MAP_TYPE } from "@/common/MapMeta.js";
 import { drawMapMarker, clearMapMarkers } from '@/common/MapMarker.js';
+import { createMapRoute } from '@/common/MapRoute.js';
 
 import { fromLonLat, toLonLat, } from "ol/proj";
 import { defaults as defaultControls, Attribution, ScaleLine } from "ol/control";
@@ -68,6 +80,7 @@ import XYZ from "ol/source/XYZ";
 import "ol/ol.css";
 
 import MapSidePannel from "@/components/map/MapSidePannel.vue";
+import ParkingDetailCard from '@/components/map/parking/ParkingDetailCard.vue';
 import MapTypeControl from "@/components/map/hud/MapTypeControl.vue";
 
 const emit = defineEmits([
@@ -84,6 +97,13 @@ const locationError = ref('');
 const showLocationError = ref(false);
 let locationRequestId = 0;
 
+const sidePanel = ref(null);
+
+function onShowDetail(parking) {
+  if (parking?.id == null) return;
+  console.log('[MapView] show-detail', parking?.id, 'sidePanel:', sidePanel.value);
+  sidePanel.value?.openDetail({ id: parking.id });
+}
 const mapElement = ref(null);
 const attributionElement = ref(null);
 const scaleElement = ref(null);
@@ -94,6 +114,10 @@ const currentMapType = ref(MAP_TYPE.BASIC);
 
 let map = null;
 let baseTileLayer = null;
+let routeDraw = null;
+let pendingRoute = null;
+const mapRouteError = ref('');
+const showRouteError = ref(false);
 
 const mapInstance = shallowRef(null);
 provide('parkingMap', mapInstance);
@@ -106,11 +130,16 @@ watch([mapMarkers, currentLocation, focusedMarkerId], () => drawMarkers(), { dee
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
   initMap();
+  routeDraw = createMapRoute(map);
+  if (pendingRoute) setMapRoute(pendingRoute);
   mapInstance.value = map;
 });
 
 onUnmounted(() => {
   locationRequestId++;
+  routeDraw?.destroy();
+  routeDraw = null;
+  pendingRoute = null;
   mapInstance.value = null;
   if (map) {
     clearMapMarkers(map);
@@ -120,6 +149,29 @@ onUnmounted(() => {
 });
 
 // ----- 함수 정의 ----- //
+
+// 패널은 API 응답을 전달하고, 경로 레이어의 생성·표시·삭제는 MapView에서 관리합니다.
+function setMapRoute(response = null) {
+  pendingRoute = response;
+  mapRouteError.value = '';
+  showRouteError.value = false;
+  if (!routeDraw) return;
+  if (!response) {
+    routeDraw.clear();
+    return;
+  }
+  try {
+    if (!routeDraw.draw(response)) {
+      mapRouteError.value = '표시할 경로 구간이 없습니다.';
+      showRouteError.value = true;
+    }
+  } catch (error) {
+    routeDraw.clear();
+    pendingRoute = null;
+    mapRouteError.value = error.message || '경로를 지도에 표시하지 못했습니다.';
+    showRouteError.value = true;
+  }
+}
 
 function setMapMarkers(markers = []) {
   mapMarkers.value = markers;
@@ -342,10 +394,16 @@ function saveMapView() {
 </script>
 
 <style scoped>
+:global(html:has(.map-view)) {
+  overflow: hidden;
+}
+
 .map-view {
   position: relative;
   width: 100%;
   height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .map {

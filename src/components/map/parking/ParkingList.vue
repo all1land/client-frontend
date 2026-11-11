@@ -5,7 +5,8 @@
       :key="parking.id"
       :parking="parking"
       :selected="parking.id === selectedId"
-      @select="$emit('select', $event)"
+      @select="onSelect"
+      @click="onSelect"
     />
   </div>
 </template>
@@ -18,5 +19,10 @@ defineProps({
   selectedId: { type: String, default: '' },
 });
 
-defineEmits(['select']);
+const emit = defineEmits(['select']);
+
+function onSelect(parking) {
+  console.log('[ParkingList] select', parking?.id);
+  emit('select', parking);
+}
 </script>

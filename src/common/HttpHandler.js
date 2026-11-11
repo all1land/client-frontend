@@ -622,6 +622,18 @@ export async function getDrivingRoute(params = {}) {
   });
 }
 
+export async function getRoutes(params = {}) {
+  return request('POST', '/routes/all', {
+    body: {
+      origin: params.origin,
+      departurePoi: params.departurePoi,
+      parkingId: params.parkingId,
+      destination: params.destination,
+    },
+    timeout: 10000,
+  });
+}
+
 
 
 // 사용 예시:
