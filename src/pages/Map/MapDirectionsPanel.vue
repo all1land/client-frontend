@@ -84,9 +84,11 @@ const parkingList = ref([]);
 const parkingLoading = ref(false);
 const parkingError = ref('');
 const ParkingErrMsg = ref('');
+
 const routesResponse = ref(null);
 const routesLoading = ref(false);
 const routesError = ref('');
+
 let routesRequestId = 0;
 let parkingRequestId = 0;
 let radiusDraw = null;
