@@ -19,12 +19,14 @@
             주차
         </v-chip>
 
-        <div class="card-title">{{ props.parking.address }}</div>
-        <div class="card-description | mt-2">{{ props.parking.description }}</div>
-        <div class="card-description | mt-2">전체 주차면 수: {{ props.parking.totalSpaces }}</div>
-
-        <v-row no-gutters class="pa-0 | mt-3 | mb-3">
-            <v-col cols="12" class="mb-1">
+        <v-row no-gutters class="align-center">
+            <div class="card-title">{{ props.parking.address }}</div>
+            <div class="ml-2 | category-box">{{ props.parking.category || '주차장' }}</div>
+            <div class="ml-1 | category-box">{{ props.parking.parkingType || '' }}</div>
+        </v-row>
+        
+        <v-row no-gutters class="pa-0 | mt-1">
+            <v-col cols="12">
                 <v-row no-gutters class="align-center">
                     <v-icon color="#6A7282" size="18" class="mr-1">mdi-phone</v-icon>
                     <span class="description-text">{{ props.parking.phone || '-' }}</span>
@@ -33,9 +35,14 @@
             <v-col cols="12">
                 <v-row no-gutters class="align-center">
                     <v-icon color="#6A7282" size="18" class="mr-1">mdi-map-marker-outline</v-icon>
-                    <span class="description-text">{{ props.parking.road_name_address }}</span>
+                    <span class="description-text">{{ props.parking.roadNameAddress || props.parking.lotNumberAddress }}</span>
                 </v-row>
             </v-col>
+        </v-row>
+
+            <v-row no-gutters class="align-center">
+            <div class="ml-2 | card-description">도착지로부터 {{ props.parking.description || '조회결과없음' }} | </div>
+            <div class="ml-1 | card-description">주차면: {{ props.parking.totalSpaces || 0 }}</div>
         </v-row>
     </v-card>
 </template>
@@ -72,9 +79,9 @@ function handleEvent(action) {
   switch (action) {
     
     case 'click':
-      emit('click', props.parking);
-      focusMapLocation?.(props.parking, 'parking');
-      break;
+        emit('click', props.parking);
+        focusMapLocation?.(props.parking, 'parking');
+        break;
 
     case 'select':
         emit("select", props.parking);
@@ -113,14 +120,14 @@ function handleEvent(action) {
 
 .card-description {
     font-size: 14px;
-    color: #4A5565;
+    color: #8B95A1;
 }
 
 /* ----- 도착 버튼 ----- */
 .arrive-chip {
     background-color: #FFFFFF;
     position: absolute;
-    top: 20%;
+    top: 32px;
     right: 8px;
     transform: translateY(-50%); 
     cursor: pointer;
@@ -148,13 +155,11 @@ function handleEvent(action) {
     pointer-events: auto;
 }
 
-.category-chip {
-    background-color: #dbf0f8;
-    border: 0.7px solid #5daedd;
-    color: #127ab7;
-    font-size: 12px;
-    padding-left: 16px !important;
-    padding-right: 12px !important;
+.category-box {
+    color: #8B95A1;
+    font-size: 16px;
+    align-items: center;
+    text-align: center;
 }
 
 .tag-chip {
@@ -191,7 +196,7 @@ function handleEvent(action) {
 
 .description-text {
     font-size: 14px;
-    color: #4A5565;
+    color: #364153;
 }
 
 .info-section span {

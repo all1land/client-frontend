@@ -51,7 +51,9 @@ import { searchHistory } from '@/common/MapHistory.js';
 import PlaceCard from '@/components/map/place/PlaceCard.vue';
 
 const emit = defineEmits(['update-map-markers']);
+
 const router = useRouter();
+
 const keyword = ref(null);
 const search = ref({});
 const filter = ref({});

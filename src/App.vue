@@ -130,25 +130,37 @@ import { useRouter, useRoute } from "vue-router";
 import { navigateTo, goBack } from '@/common/RouterUtil.js';
 import SideNavItem from '@/components/common/SideNavItem.vue';
 
+// 기본 좌표: 올포랜드 (서울 강서구 마곡, 원그로브 인근)
+const DEFAULT_LOCATION = {
+  latitude: 37.5598,
+  longitude: 126.8259,
+};
+
 const currentLocation = ref(null);
 provide('currentLocation', currentLocation);
 
-function checkWhereMe() {
-  if (!navigator.geolocation) return;
-
-  navigator.geolocation.getCurrentPosition(
-    ({ coords }) => {
-      currentLocation.value = {
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-      };
-    },
-    () => {
-      currentLocation.value = null;
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-  );
+// 기본 좌표로 현위치 설정
+function setDefaultLocation() {
+  currentLocation.value = { ...DEFAULT_LOCATION };
 }
+
+// [임시 비활성화] 브라우저 Geolocation 기반 현위치 조회
+// function checkWhereMe() {
+//   if (!navigator.geolocation) return;
+//
+//   navigator.geolocation.getCurrentPosition(
+//     ({ coords }) => {
+//       currentLocation.value = {
+//         latitude: coords.latitude,
+//         longitude: coords.longitude,
+//       };
+//     },
+//     () => {
+//       currentLocation.value = null;
+//     },
+//     { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+//   );
+// }
 
 const router = useRouter();
 const route = useRoute();
@@ -234,7 +246,8 @@ const dialog = ref({
 onMounted(() => {
   console.log(import.meta.env)
   
-  checkWhereMe();
+  setDefaultLocation(); // 기본 좌표(올포랜드)로 현위치 설정
+  // checkWhereMe();
   // checkLogin();
   loadUserInfo(); // 컴포넌트 마운트 시 유저 정보 로드
 });
