@@ -32,6 +32,7 @@
       <PlaceCard
         :place="place"
         @select="handleEvent('select', $event)"
+        @click="handleEvent('detail', $event)"
       />
     </v-col>
     <v-col v-if="searched && !places.length" class="pa-3" cols="12">
@@ -51,7 +52,7 @@ import * as HttpHandler from '@/common/HttpHandler.js';
 import { searchHistory } from '@/common/MapHistory.js';
 import PlaceCard from '@/components/map/place/PlaceCard.vue';
 
-const emit = defineEmits(['update-map-markers']);
+const emit = defineEmits(['update-map-markers', 'show-detail', 'close-detail']);
 
 const router = useRouter();
 
@@ -146,6 +147,15 @@ async function handleEvent(action, payload) {
 
     case 'select':
       selectDestination(payload);
+      break;
+
+    case 'detail':
+      if (payload?.id != null) {
+        emit('show-detail', {
+          id: payload.id,
+          kind: 'place',
+        });
+      }
       break;
 
     case 'clear':

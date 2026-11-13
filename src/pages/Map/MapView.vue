@@ -9,7 +9,14 @@
         @close-detail="sidePanel?.closeDetail()"
       />
       <template #detail="{ detail }">
-        <ParkingDetailCard :parking="detail" />
+        <PlaceDetailCard
+          v-if="detail?.kind === 'place'"
+          :place="detail"
+        />
+        <ParkingDetailCard
+          v-else
+          :parking="detail"
+        />
       </template>
     </MapSidePannel>
 
@@ -81,6 +88,7 @@ import "ol/ol.css";
 
 import MapSidePannel from "@/components/map/MapSidePannel.vue";
 import ParkingDetailCard from '@/components/map/parking/ParkingDetailCard.vue';
+import PlaceDetailCard from '@/components/map/place/PlaceDetailCard.vue';
 import MapTypeControl from "@/components/map/hud/MapTypeControl.vue";
 
 const emit = defineEmits([
@@ -99,10 +107,10 @@ let locationRequestId = 0;
 
 const sidePanel = ref(null);
 
-function onShowDetail(parking) {
-  if (parking?.id == null) return;
-  console.log('[MapView] show-detail', parking?.id, 'sidePanel:', sidePanel.value);
-  sidePanel.value?.openDetail({ id: parking.id });
+function onShowDetail(item) {
+  if (item?.id == null) return;
+  const kind = item.kind === 'place' ? 'place' : 'parking';
+  sidePanel.value?.openDetail({ id: item.id, kind });
 }
 const mapElement = ref(null);
 const attributionElement = ref(null);
