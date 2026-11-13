@@ -426,153 +426,25 @@ export async function deleteFile(params = {}) {
   });
 }
 
+// ----- 공통코드 API ----- //
+
+
 // ----- 장소 API ----- //
 export async function listPlaces(params = {}) {
-  const PLACE_MOCK_ITEMS = [
-  {
-    id: 1,
-    title: "서울식물원",
-    description: "마곡지구에 위치한 대규모 식물원과 공원",
-    imageUrl: "https://placehold.co/150",
-    location_id: 1,
-    category_code: 1,
-    lot: "37.5694",
-    lng: "126.8350",
-    zip_code: "07789",
-    road_name_address: "서울특별시 강서구 마곡동로 161",
-    phone: "02-2104-9716",
-  },
-  {
-    id: 2,
-    title: "마곡나루역",
-    description: "서울 지하철 9호선과 공항철도가 지나는 환승역",
-    imageUrl: "https://placehold.co/150",
-    location_id: 1,
-    category_code: 1,
-    lot: "37.5673",
-    lng: "126.8270",
-    zip_code: "07792",
-    road_name_address: "서울특별시 강서구 마곡중앙로 지하 135",
-    phone: "02-2104-9716",
-  },
-  {
-    id: 3,
-    title: "마곡광장",
-    description: "마곡나루역 인근의 시민 휴식 및 문화 공간",
-    imageUrl: "https://placehold.co/150",
-    location_id: 1,
-    category_code: 1,
-    lot: "37.5669",
-    lng: "126.8282",
-    zip_code: "07792",
-    road_name_address: "서울특별시 강서구 마곡중앙로 일대",
-    phone: "02-2104-9716",
-  },
-  {
-    id: 4,
-    title: "LG사이언스파크",
-    description: "LG그룹의 연구개발 시설이 모여 있는 산업단지",
-    imageUrl: "https://placehold.co/150",
-    location_id: 1,
-    category_code: 1,
-    lot: "37.5623",
-    lng: "126.8345",
-    zip_code: "07796",
-    road_name_address: "서울특별시 강서구 마곡중앙10로 30",
-    phone: "02-2104-9716",
-  },
-  {
-    id: 5,
-    title: "코엑스 마곡",
-    description: "마곡지구의 전시 및 컨벤션 시설",
-    imageUrl: "https://placehold.co/150",
-    location_id: 1,
-    category_code: 1,
-    lot: "37.5660",
-    lng: "126.8262",
-    zip_code: "07798",
-    road_name_address: "서울특별시 강서구 마곡중앙로 143",
-    phone: "02-2104-9716",
-  },
-  {
-    id: 6,
-    title: "발산역",
-    description: "서울 지하철 5호선 발산역과 주변 상업지역",
-    imageUrl: "https://placehold.co/150",
-    location_id: 1,
-    category_code: 1,
-    lot: "37.5586",
-    lng: "126.8377",
-    zip_code: "07803",
-    road_name_address: "서울특별시 강서구 공항대로 지하 267",
-    phone: "02-2104-9716",
-  },
-  {
-    id: 7,
-    title: "마곡역",
-    description: "마곡 업무지구와 주거지역을 잇는 지하철 5호선 역",
-    imageUrl: "https://placehold.co/150",
-    location_id: 1,
-    category_code: 1,
-    lot: "37.5602",
-    lng: "126.8255",
-    zip_code: "07801",
-    road_name_address: "서울특별시 강서구 공항대로 지하 163",
-    phone: "02-2104-9716",
-  },
-  {
-    id: 8,
-    title: "이대서울병원",
-    description: "마곡지구에 위치한 이화여자대학교 의료원 산하 병원",
-    imageUrl: "https://placehold.co/150",
-    location_id: 1,
-    category_code: 1,
-    lot: "37.5585",
-    lng: "126.8368",
-    zip_code: "07804",
-    road_name_address: "서울특별시 강서구 공항대로 260",
-    phone: "1522-7000",
-  },
-  {
-    id: 9,
-    title: "겸재정선미술관",
-    description: "조선시대 화가 겸재 정선의 작품과 미술 문화를 소개하는 미술관",
-    imageUrl: "https://placehold.co/150",
-    location_id: 1,
-    category_code: 1,
-    lot: "37.5722",
-    lng: "126.8385",
-    zip_code: "07524",
-    road_name_address: "서울특별시 강서구 양천로47길 36",
-    phone: "02-2104-9716",
-  },
-  {
-    id: 10,
-    title: "허준박물관",
-    description: "동의보감과 허준의 생애 및 전통 의학을 소개하는 박물관",
-    imageUrl: "https://placehold.co/150",
-    location_id: 1,
-    category_code: 1,
-    lot: "37.5680",
-    lng: "126.8509",
-    zip_code: "07525",
-    road_name_address: "서울특별시 강서구 허준로 87",
-    phone: "02-2104-9716",
-  },
-  ];
-  const page = Number(params.page) || 1;
-  const limit = Number(params.limit) || PLACE_MOCK_ITEMS.length;
-  const start = (page - 1) * limit;
-
-  return {
-    success: true,
-    code: 'COMMON_200_001',
-    message: '성공적으로 요청을 처리했습니다.',
-    data: {
-      items: PLACE_MOCK_ITEMS.slice(start, start + limit),
-      total: PLACE_MOCK_ITEMS.length,
+  return request('GET', '/places/list', {
+    params: {
+      centerLat: params.centerLat,
+      centerLon: params.centerLon,
+      pageIndex: params.pageIndex ?? 1,
+      pageSize: params.pageSize ?? 10,
+      keyword: params.keyword ?? '',
+      zoom: params.zoom,
+      minLat: params.minLat,
+      minLon: params.minLon,
+      maxLat: params.maxLat,
+      maxLon: params.maxLon,
     },
-  };
+  });
 }
 
 // ----- 주차장 조회 ----- //
