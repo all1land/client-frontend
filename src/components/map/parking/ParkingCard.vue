@@ -21,8 +21,8 @@
 
         <v-row no-gutters class="align-center">
             <div class="card-title">{{ props.parking.address }}</div>
-            <div class="ml-2 | category-box">{{ props.parking.category || '주차장' }}</div>
-            <div class="ml-1 | category-box">{{ props.parking.parkingType || '' }}</div>
+            <div class="ml-2 | category-box">{{ categoryName }}</div>
+            <div class="ml-1 | category-box">{{ parkingTypeName }}</div>
         </v-row>
         
         <v-row no-gutters class="pa-0 | mt-1">
@@ -52,6 +52,7 @@
 import { onMounted, onUnmounted, ref, computed, watch, inject} from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { routes } from "@/router"
+import { useParkingCodeLabels } from '@/common/CommonCode.js';
 
 const props = defineProps({
   parking: {
@@ -70,6 +71,7 @@ onMounted(() => {
 onUnmounted(() => {
 
 })
+const { categoryName, parkingTypeName } = useParkingCodeLabels(computed(() => props.parking));
 
 // ----- 함수 정의 ----- //
 

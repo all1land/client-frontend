@@ -42,7 +42,7 @@
 
 <script setup>
 // ----- 선언부 ----- //
-import { onMounted, onUnmounted, ref, watch, inject } from "vue";
+import { onMounted, onUnmounted, ref, computed, watch, inject } from "vue";
 import { toLonLat, transformExtent } from "ol/proj";
 import { useRouter, useRoute } from "vue-router";
 import { routes } from "@/router"

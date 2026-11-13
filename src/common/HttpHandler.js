@@ -427,6 +427,22 @@ export async function deleteFile(params = {}) {
 }
 
 // ----- 공통코드 API ----- //
+/** 최상위 공통코드 그룹 조회. response.data는 공통코드 배열입니다. */
+export async function listCommonCodeRoots(params = {}) {
+  return request('GET', '/common-codes/roots', {
+    params: { includeInactive: params.includeInactive ?? false },
+  });
+}
+
+/** 그룹의 하위 공통코드 조회 (예: PARKING_CATEGORY, PARKING_TYPE). */
+export async function listCommonCodes(groupCode, params = {}) {
+  if (typeof groupCode !== 'string' || !groupCode.trim()) {
+    throw new Error('공통코드 그룹이 필요합니다.');
+  }
+  return request('GET', `/common-codes/${encodeURIComponent(groupCode.trim())}`, {
+    params: { includeInactive: params.includeInactive ?? false },
+  });
+}
 
 
 // ----- 장소 API ----- //

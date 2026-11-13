@@ -1,8 +1,8 @@
 <template>
     <v-row class="justify-start | align-center" v-if="parkingDetail" no-gutters>
         <div class="title-text">{{ parkingDetail?.name }}</div>
-        <div class="ml-2 | category-text">{{ parkingDetail.category || '주차장' }}</div>
-        <div class="ml-1 | category-text">{{ parkingDetail.parkingType || '' }}</div>
+        <div class="ml-2 | category-text">{{ categoryName }}</div>
+        <div class="ml-1 | category-text">{{ parkingTypeName }}</div>
     </v-row>
 
     <p v-if="props.parking?.id != null">주차장 ID: {{ parkingDetail }}</p>
@@ -13,6 +13,7 @@
 import { onUnmounted, ref, watch } from "vue";
 
 import * as HttpHandler from '@/common/HttpHandler.js';
+import { useParkingCodeLabels } from '@/common/CommonCode.js';
 
 const props = defineProps({
     parking: { 
@@ -22,6 +23,7 @@ const props = defineProps({
 });
 
 const parkingDetail = ref(null);
+const { categoryName, parkingTypeName } = useParkingCodeLabels(parkingDetail);
 const parkingDetailLoading = ref(false);
 const parkingDetailError = ref('');
 
@@ -29,7 +31,6 @@ let detailRequestId = 0;
 let disposed = false;
 
 // ----- 라이프 사이클 ----- //
-// 슬롯은 최초 마운트 시 parking이 null일 수 있으며, 카드 선택 시 같은 컴포넌트의 ID가 바뀝니다.
 watch(() => props.parking?.id, (id) => fetchGetParkingDetail(id), { immediate: true, flush: 'sync' });
 
 onUnmounted(() => {
@@ -60,11 +61,7 @@ async function fetchGetParkingDetail(parkingLotId) {
         if (!response?.data || typeof response.data !== 'object' || Array.isArray(response.data)) {
             throw new Error('주차장 상세 응답이 올바르지 않습니다.');
         }
-        parkingDetail.value = {
-            ...response.data,
-            category: response.data.categoryCode || '주차장',
-            parkingType: response.data.parkingTypeCode || '',
-        };
+        parkingDetail.value = response.data;
         return response;
 
     } catch (error) {
