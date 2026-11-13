@@ -463,6 +463,18 @@ export async function listPlaces(params = {}) {
   });
 }
 
+/**
+ * 장소 상세 조회. response.data는 장소 상세 객체입니다.
+ * @param {{ placeId: number|string }} params - 목록 응답의 poiId 또는 선택한 장소의 id
+ */
+export async function getDetailPlace(params = {}) {
+  const placeId = params.placeId;
+  if (!/^\d+$/.test(String(placeId)) || /^0+$/.test(String(placeId))) {
+    throw new Error('유효한 장소 ID가 필요합니다.');
+  }
+  return request('GET', `/places/${encodeURIComponent(placeId)}`);
+}
+
 // ----- 주차장 조회 ----- //
 /**
  * 주변 주차장 조회. response.data는 주차장 배열입니다.
