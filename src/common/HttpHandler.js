@@ -446,6 +446,12 @@ export async function listCommonCodes(groupCode, params = {}) {
 
 
 // ----- 장소 API ----- //
+
+/**
+ * 장소 목록 조회 (페이지네이션)
+ * @param {object} params - 쿼리 파라미터
+ * @returns {Promise<any>} - 응답 데이터
+ */
 export async function listPlaces(params = {}) {
   return request('GET', '/places/list', {
     params: {
@@ -461,6 +467,66 @@ export async function listPlaces(params = {}) {
       maxLon: params.maxLon,
     },
   });
+}
+
+/**
+ * 장소 목록 API 응답을 배열로 정규화
+ * @param {any} response - API 응답 객체
+ * @returns {object[]} - 장소 배열
+ */
+export function normalizePlaceListResponse(response) {
+  const page = response?.data ?? response?.result ?? response;
+  const items = page?.items ?? page?.list ?? page?.contents ?? page?.content;
+  if (!Array.isArray(items)) {
+    throw new Error('Cannot find places array. Check ApiResDTO/CmmListResDTO response field names.');
+  }
+  return items;
+}
+
+/**
+ * API 응답의 장소를 UI 컴포넌트용 형식으로 변환
+ * @param {object} apiPlace - API 응답의 장소 객체
+ * @returns {object} - 변환된 장소 객체
+ */
+export function transformPlaceResponse(apiPlace) {
+  return {
+    ...apiPlace,
+    id: apiPlace.poiId || apiPlace.id,
+    title: apiPlace.name,
+    road_name_address: apiPlace.roadNameAddress,
+    lat: apiPlace.latitude || apiPlace.lat,
+    lng: apiPlace.longitude || apiPlace.lng,
+  };
+}
+
+/**
+ * 장소 객체의 좌표를 정규화
+ * @param {object} place - 장소 객체
+ * @returns {object} - { isValid: boolean, lat: number, lng: number }
+ */
+export function normalizePlaceCoordinates(place) {
+  const lat = Number(place?.latitude ?? place?.lat ?? place?.lot);
+  const lng = Number(place?.longitude ?? place?.lng);
+  
+  return {
+    isValid: Number.isFinite(lat) && Number.isFinite(lng) && 
+             lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180,
+    lat,
+    lng,
+  };
+}
+
+/**
+ * 장소 객체의 유효성 검사
+ * @param {object} place - 장소 객체
+ * @returns {boolean}
+ */
+export function isValidPlace(place) {
+  if (!place || typeof place !== 'object') return false;
+  if (!place.id && !place.poiId) return false;
+  
+  const { isValid } = normalizePlaceCoordinates(place);
+  return isValid;
 }
 
 /**

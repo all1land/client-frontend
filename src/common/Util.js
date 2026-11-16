@@ -30,6 +30,44 @@ const Util = (function () {
 
                 return /^[A-Z0-9_]+$/.test(String(value));
             },
+
+            normalizePlaceCoordinates(place) {
+                const lat = Number(place?.latitude ?? place?.lat ?? place?.lot);
+                const lng = Number(place?.longitude ?? place?.lng);
+                
+                return {
+                    isValid: Number.isFinite(lat) && Number.isFinite(lng) && 
+                             lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180,
+                    lat,
+                    lng,
+                };
+            },
+
+            isValidPlace(place) {
+                if (!place || typeof place !== 'object') return false;
+                if (!place.id && !place.poiId) return false;
+                
+                const { isValid } = this.normalizePlaceCoordinates(place);
+                return isValid;
+            },
+
+            extractPlaceId(place) {
+                return String(place?.poiId ?? place?.id ?? '');
+            },
+
+            getPlaceCoordinate(place) {
+                if (!place) return null;
+                const { isValid, lat, lng } = this.normalizePlaceCoordinates(place);
+                return isValid ? { lat, lng } : null;
+            },
+
+            getPlaceName(place) {
+                return place?.name ?? place?.title ?? place?.placeName ?? '';
+            },
+
+            getPlaceAddress(place) {
+                return place?.roadNameAddress ?? place?.address ?? '';
+            },
             
             formatUnixDate(value) {
                 if (value === null || value === undefined || value === '') {
