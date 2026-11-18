@@ -60,7 +60,7 @@ const routeStyles = {
   ],
 };
 
-/** POST /api/routes/all 응답의 [경도, 위도] 좌표를 지도 투영 좌표로 변환해 표시합니다. */
+/** POST /routes/all 응답의 [경도, 위도] 좌표를 지도 투영 좌표로 변환해 표시합니다. */
 export function createMapRoute(map) {
   const source = new VectorSource({ wrapX: false });
   const layer = new VectorLayer({

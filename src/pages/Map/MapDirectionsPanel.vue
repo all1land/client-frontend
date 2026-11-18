@@ -40,11 +40,16 @@
 
   <v-divider class="my-2" />
 
-  <v-row class="mb-3" no-gutters>
+  <div v-if="routesError" class="route-error" role="alert">{{ routesError }}</div>
+
+  <DirectionResult v-if="routesResponse" :result="routesResponse.data" />
+  
+  <v-row v-else class="mb-3" no-gutters>
     <v-col cols="12" class="list-header">주차장</v-col>
   </v-row>
-  
+
   <ParkingList
+    v-if="!routesResponse"
     :items="parkingList"
     :recommended-ids="recommendedParkingIds"
     @select="handleEvent('select', $event)"
@@ -62,6 +67,7 @@ import * as HttpHandler from '@/common/HttpHandler.js';
 import { createMapDraw } from '@/common/MapDraw.js';
 import { routeHistory } from '@/common/MapHistory.js';
 import ParkingList from '@/components/map/parking/ParkingList.vue';
+import DirectionResult from '@/components/map/directions/DirectionResult.vue';
 
 const emit = defineEmits(['update-map-markers', 'update-map-route', 'show-detail', 'close-detail']);
 const currentLocation = inject('currentLocation', ref(null));
@@ -406,7 +412,11 @@ async function fetchGetRoutes() {
       destination: { latitude: arrival.value.lat, longitude: arrival.value.lng },
     });
     if (requestId !== routesRequestId) return;
+    if (!response?.data || !Array.isArray(response.data.segments)) {
+      throw new Error('경로 응답 형식을 확인해주세요.');
+    }
     routesResponse.value = response;
+    emit('close-detail');
     emit('update-map-route', response);
     return response;
   } catch (error) {
@@ -488,6 +498,11 @@ async function fetchGetRoutes() {
   font-size: 18px;
   font-weight: 600;
   margin: 12px 12px 0px 12px;
+}
+
+.route-error {
+  padding: 8px 12px;
+  color: #b3261e;
 }
 
 </style>
