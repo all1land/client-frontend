@@ -90,7 +90,6 @@ const COLORS = {
 const steps = computed(() => {
   const summary = props.result.summary ?? {};
   return [
-    { key: 'departureWalk', label: '출발지 도보', icon: 'mdi-walk', color: COLORS.walk, seconds: summary.departureWalkingDurationSeconds },
     { key: 'driving', label: '자동차', icon: 'mdi-car', color: COLORS.car, seconds: summary.drivingDurationSeconds },
     { key: 'arrivalWalk', label: '도착지 도보', icon: 'mdi-walk', color: COLORS.walk, seconds: summary.arrivalWalkingDurationSeconds },
   ];
@@ -136,7 +135,7 @@ const clockTexts = computed(() => {
 });
 
 const timelineNodes = computed(() => {
-  const labels = ['출발', '차량 탑승', '주차 완료', '도착'];
+  const labels = ['출발', '주차 완료', '도착'];
   return labels.map((label, index) => ({
     key: `node-${index}`,
     label,
