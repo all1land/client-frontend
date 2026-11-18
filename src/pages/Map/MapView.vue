@@ -74,6 +74,7 @@
 <script setup>
 // ----- 선언부 ----- //
 import { onMounted, onUnmounted, ref, shallowRef, provide, watch, inject } from "vue";
+import { useRoute } from "vue-router";
 import { mapMeta, MAP_TYPE } from "@/common/MapMeta.js";
 import { drawMapMarker, clearMapMarkers } from '@/common/MapMarker.js';
 import { createMapRoute } from '@/common/MapRoute.js';
@@ -106,6 +107,7 @@ const showLocationError = ref(false);
 let locationRequestId = 0;
 
 const sidePanel = ref(null);
+const route = useRoute();
 
 function onShowDetail(item) {
   if (item?.id == null) return;
@@ -128,10 +130,14 @@ const mapRouteError = ref('');
 const showRouteError = ref(false);
 
 const mapInstance = shallowRef(null);
+
 provide('parkingMap', mapInstance);
 provide('focusMapLocation', focusMapLocation);
+
 const mapMarkers = ref([]);
 const focusedMarkerId = ref(null);
+
+watch(() => route.path, () => sidePanel.value?.closeDetail());
 watch(mapInstance, () => drawMarkers());
 watch([mapMarkers, currentLocation, focusedMarkerId], () => drawMarkers(), { deep: true });
 
