@@ -4,30 +4,20 @@
       v-model="keyword"
       v-model:search="searchText"
       prepend-inner-icon="mdi-magnify"
-      class="inputbox | mr-2"
-      variant="outlined"
-      density="compact"
-      rounded="m"
-      bg-color="#ffffff"
-      base-color="#8AB63F"
-      color="#8AB63F"
-      hide-details
-      clearable
+      class="inputbox"
+      variant="outlined" density="compact" rounded="m"
+      bg-color="#ffffff" base-color="#8AB63F" color="#8AB63F"
+      hide-details clearable
       placeholder="장소 검색"
       @keydown.enter.prevent="handleEvent('search')"
     />
   </v-row>
 
-  <v-alert v-if="errorMessage" type="error" class="ma-3">
-    {{ errorMessage }}
-  </v-alert>
+  <v-row class="mb-3" no-gutters>
+    <v-col cols="12" class="list-header">{{ searched ? '검색 결과' : '주변' }}</v-col>
+  </v-row>
 
-  
-  <v-row no-gutters class="container-list">
-    <v-row no-gutters class="list-header">
-      {{ searched ? '검색 결과' : '주변' }} · {{ totalCnt }}건
-    </v-row>
-    
+  <v-row no-gutters class="container-list">  
     <v-col v-for="place in places" :key="place.id" cols="12">
       <PlaceCard
         :place="place"
@@ -35,7 +25,7 @@
         @click="handleEvent('detail', $event)"
       />
     </v-col>
-    <v-col v-if="searched && !places.length" class="pa-3" cols="12">
+    <v-col v-if="(searched || fetchFailed) && !places.length" class="pa-3" cols="12">
       현재 지도 영역에 검색 결과가 없습니다.
     </v-col>
   </v-row>
@@ -60,8 +50,6 @@ const router = useRouter();
 const util = Util.getInstance();
 
 const keyword = ref(null);
-const search = ref({});
-const filter = ref({});
 const searchText = ref('');
 const historyItems = ref([]);
 const places = ref([]);
@@ -69,8 +57,10 @@ const destination = ref(null);
 const searched = ref(false);
 const loading = ref(false);
 const errorMessage = ref('');
+const fetchFailed = ref(false);
 const totalCnt = ref(0);
 const mapInstance = inject('parkingMap', ref(null));
+
 let attachedMap = null;
 let requestId = 0;
 let appliedKeyword = '';
@@ -98,9 +88,7 @@ watch(mapInstance, (nextMap) => {
     onChange: (visiblePlaces, meta) => {
       places.value = visiblePlaces.map(HttpHandler.transformPlaceResponse);
       totalCnt.value = visiblePlaces.length;
-      if (meta.error) {
-        errorMessage.value = meta.error.message || '장소 목록을 불러오지 못했습니다.';
-      }
+      fetchFailed.value = !!meta.error;
     },
     cacheScale: 1.5,
     offscreenTtlMs: 15_000,
@@ -260,6 +248,12 @@ function selectDestination(place) {
 </script>
 
 <style scoped>
+.inputbox {
+  width: 100%;
+  flex: 1 1 100%;
+  margin: 0;
+}
+
 .inputbox :deep(.v-field__input) {
   color: #364153 !important;
   font-size: 16px !important;
@@ -284,14 +278,15 @@ function selectDestination(place) {
   margin: 0;
   overflow-y: auto;
 }
+
 .list-header {
   width: 100%;
   font-size: 18px;
   font-weight: 600;
-  margin: 0;
-  padding: 12px 12px 0;
+  margin: 12px 12px 0px 12px;
 }
+
 .searchbox-list {
-  margin: 12px;
+  margin: 24px 12px 8px 12px;
 }
 </style>

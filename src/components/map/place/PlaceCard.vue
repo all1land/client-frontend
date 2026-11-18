@@ -19,9 +19,12 @@
             도착
         </v-chip>
 
-        <div class="card-title">{{ props.place.title }}</div>
-        <div class="card-description | mt-2">{{ props.place.description }}</div>
-
+        <!-- 헤더 -->
+        <v-row no-gutters class="align-center | header-row">
+            <div class="card-title">{{ props.place.title }}</div>
+            <div class="ml-2 | category-box">{{ categoryName }}</div>
+        </v-row>
+        
         <v-row no-gutters class="pa-0 | mt-3 | mb-3">
             <v-col cols="12" class="mb-1">
                 <v-row no-gutters class="align-center">
@@ -58,25 +61,46 @@ import { onMounted, onUnmounted, ref, computed, watch, inject} from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { routes } from "@/router"
 
+import * as HttpHandler from '@/common/HttpHandler.js';
+
+
 const props = defineProps({
-  place: {
-    type: Object,
-    required: true,
-  }
+    place: {
+        type: Object,
+        required: true,
+    },
+    selected: {
+        type: Boolean,
+        default: false,
+    },
 });
 const emit = defineEmits(["select", "click"]);
 const focusMapLocation = inject('focusMapLocation', null);
 
+const placeCategories = ref([]);
+const categoryName = computed(() => {
+    const code = props.place?.categoryCode || props.place?.category;
+    return placeCategories.value.find((item) => item.code === code)?.name || code || '장소';
+});
+
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
-
+    fetchPlaceCategory();
 });
 
 onUnmounted(() => {
 
 })
 
-// ----- 함수 정의 ----- //
+// ----- 함수 정의 ----- //`
+async function fetchPlaceCategory() {
+    try {
+        const response = await HttpHandler.listCommonCodes('PLACE_CATEGORY', { includeInactive: false });
+        placeCategories.value = response.data;
+    } catch (error) {
+        console.error('장소 분류 조회 실패:', error);
+    }
+}
 
 // 버튼 클릭 이벤트 핸들러
 function handleEvent(action) {
@@ -125,6 +149,12 @@ function handleEvent(action) {
 .card-description {
     font-size: 14px;
     color: #4A5565;
+}
+
+.category-box {
+    color: #8B95A1;
+    font-size: 16px;
+    text-align: center;
 }
 
 /* ----- 도착 버튼 ----- */
