@@ -600,6 +600,23 @@ export async function getRoutes(params = {}) {
   });
 }
 
+/**
+ * 최적 주차장 추천. response.data는 추천 주차장 정보입니다.
+ * @param {{ origin: {latitude, longitude}, departurePoi: {latitude, longitude}, destination: {latitude, longitude}, radius: number, limit: number }} params
+ */
+export async function getParkingRecommendations(params = {}) {
+  return request('POST', '/routes/recommendations', {
+    body: {
+      origin: params.origin,
+      departurePoi: params.departurePoi,
+      destination: params.destination,
+      radius: params.radius,
+      limit: params.limit,
+    },
+    timeout: 10000,
+  });
+}
+
 
 
 // 사용 예시:

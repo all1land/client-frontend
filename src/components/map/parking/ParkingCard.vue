@@ -1,14 +1,16 @@
 <template>
     <v-card 
         class="parking-card"
-        :class="{ 'parking-card--selected': props.selected }"
+        :class="{ 
+            'parking-card--selected': props.selected,
+            'parking-card--recommended': props.isRecommended
+        }"
         variant="outlined"
         tabindex="0"
         @click="handleEvent('click')"
         @keydown.enter.self.prevent="handleEvent('click')"
         @keydown.space.self.prevent="handleEvent('click')"
     >
-
         <!-- hover 시 나타나는 주차 버튼 -->
         <v-chip
             class="arrive-chip"
@@ -21,10 +23,21 @@
 
         <!-- 헤더 -->
         <v-row no-gutters class="align-center | header-row">
+            <!-- 추천 배지 -->
             <div class="card-title">{{ props.parking.address }}</div>
             <div class="ml-2 | category-box">{{ categoryName }}</div>
             <div class="ml-1 | category-box">{{ parkingTypeName }}</div>
         </v-row>
+        <v-chip
+            v-if="props.isRecommended"
+            class="recommended-badge"
+            prepend-icon="mdi-star"
+            size="small"
+            color="#8AB63F"
+            text-color="white"
+        >
+            추천
+        </v-chip>
 
         <!-- 전화 / 주소 -->
         <v-row no-gutters class="pa-0 | mt-1">
@@ -59,6 +72,10 @@ const props = defineProps({
         required: true,
     },
     selected: {
+        type: Boolean,
+        default: false,
+    },
+    isRecommended: {
         type: Boolean,
         default: false,
     },
@@ -131,12 +148,22 @@ function handleEvent(action) {
     border-radius: 0px;
     background-color: #FFFFFF;
     cursor: pointer;
+    position: relative;
 }
 
 .parking-card:hover,
 .parking-card--selected {
     background-color: #F3F4F6;
 }
+
+.parking-card--recommended {
+    color: #fefff0;
+}
+
+/* .parking-card--recommended:hover,
+.parking-card--recommended.parking-card--selected {
+    color: #FFF8E6;
+} */
 
 /* 우측 '주차' 버튼 영역만큼 비워서 텍스트와 겹치지 않게 */
 .header-row {
@@ -168,6 +195,16 @@ function handleEvent(action) {
 .card-description {
     font-size: 14px;
     color: #8B95A1;
+}
+
+/* ----- 추천 배지 ----- */
+.recommended-badge {
+    font-size: 12px;
+    font-weight: 600;
+    height: 24px !important;
+    min-width: 36px;
+    align-items: center;
+    justify-content: center;
 }
 
 /* ----- 도착 버튼 ----- */

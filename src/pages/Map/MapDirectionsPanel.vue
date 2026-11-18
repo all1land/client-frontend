@@ -46,6 +46,7 @@
   
   <ParkingList
     :items="parkingList"
+    :recommended-ids="recommendedParkingIds"
     @select="handleEvent('select', $event)"
     @click="handleEvent('detail', $event)"
   />
@@ -76,6 +77,10 @@ const parkingList = ref([]);
 const parkingLoading = ref(false);
 const parkingError = ref('');
 const ParkingErrMsg = ref('');
+
+const recommendedParkingIds = ref([]);
+const recommendationsLoading = ref(false);
+const recommendationsError = ref('');
 
 const routesResponse = ref(null);
 const routesLoading = ref(false);
@@ -283,6 +288,7 @@ async function fetchListParking() {
   parkingList.value = [];
   parkingError.value = '';
   parkingLoading.value = false;
+  recommendedParkingIds.value = [];
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng) ||
       lat < -90 || lat > 90 || lng < -180 || lng > 180) {
@@ -319,6 +325,11 @@ async function fetchListParking() {
         ? `${Math.round(item.distanceMeters)}m`
         : '',
     }));
+
+    // 추천 주차장 조회
+    if (requestId === parkingRequestId) {
+      fetchParkingRecommendations();
+    }
   } catch (error) {
     if (requestId !== parkingRequestId) return;
     parkingError.value = error.message || '주차장 목록 조회에 실패했습니다.';
@@ -326,6 +337,41 @@ async function fetchListParking() {
     if (requestId === parkingRequestId) {
       parkingLoading.value = false;
     }
+  }
+}
+
+async function fetchParkingRecommendations() {
+  const { lat, lng } = arrival.value;
+  const { latitude: depLat, longitude: depLng } = currentLocation.value || {};
+  const radius = radiusMeters.value;
+  recommendedParkingIds.value = [];
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) ||
+      !Number.isFinite(depLat) || !Number.isFinite(depLng)) {
+    return;
+  }
+
+  recommendationsLoading.value = true;
+  recommendationsError.value = '';
+  
+  try {
+    const response = await HttpHandler.getParkingRecommendations({
+      origin: { latitude: depLat, longitude: depLng },
+      departurePoi: { latitude: depLat, longitude: depLng },
+      destination: { latitude: lat, longitude: lng },
+      radius,
+      limit: 3,
+    });
+
+    if (response?.data?.recommendations && Array.isArray(response.data.recommendations)) {
+      recommendedParkingIds.value = response.data.recommendations
+        .map((rec) => rec.parkingId)
+        .filter((id) => id != null);
+    }
+  } catch (error) {
+    console.warn('추천 주차장 조회 실패:', error.message);
+  } finally {
+    recommendationsLoading.value = false;
   }
 }
 
