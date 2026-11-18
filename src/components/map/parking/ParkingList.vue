@@ -1,14 +1,18 @@
 <template>
-  <div>
-    <ParkingCard
+  <v-row no-gutters class="container-list">
+    <v-col
       v-for="parking in items"
       :key="parking.id"
-      :parking="parking"
-      :selected="parking.id === selectedId"
-      @select="onSelect"
-      @click="onSelect"
-    />
-  </div>
+      cols="12"
+    >
+      <ParkingCard
+        :parking="parking"
+        :selected="parking.id === selectedId"
+        @select="onSelect"
+        @click="onClick"
+      />
+    </v-col>
+  </v-row>
 </template>
 
 <script setup>
@@ -19,10 +23,24 @@ defineProps({
   selectedId: { type: String, default: '' },
 });
 
-const emit = defineEmits(['select']);
+const emit = defineEmits(['select', 'click']);
 
 function onSelect(parking) {
-  console.log('[ParkingList] select', parking?.id);
   emit('select', parking);
 }
+
+function onClick(parking) {
+  emit('click', parking);
+}
 </script>
+
+<style scoped>
+.container-list {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  justify-content: center;
+  align-items: flex-start;
+  align-content: flex-start;
+}
+</style>

@@ -44,19 +44,11 @@
     <v-col cols="12" class="list-header">주차장</v-col>
   </v-row>
   
-  <v-row no-gutters class="container-list">
-    <v-col
-      v-for="parking in parkingList"
-      :key="parking.id"
-      cols="12"
-    >
-      <ParkingCard 
-        :parking="parking"
-        @select="handleEvent('select', $event)"
-        @click="handleEvent('detail', $event)"
-      />
-    </v-col>
-  </v-row>
+  <ParkingList
+    :items="parkingList"
+    @select="handleEvent('select', $event)"
+    @click="handleEvent('detail', $event)"
+  />
 </template>
 
 <script setup>
@@ -68,7 +60,7 @@ import { routes } from "@/router"
 import * as HttpHandler from '@/common/HttpHandler.js';
 import { createMapDraw } from '@/common/MapDraw.js';
 import { routeHistory } from '@/common/MapHistory.js';
-import ParkingCard from '@/components/map/parking/ParkingCard.vue';
+import ParkingList from '@/components/map/parking/ParkingList.vue';
 
 const emit = defineEmits(['update-map-markers', 'update-map-route', 'show-detail', 'close-detail']);
 const currentLocation = inject('currentLocation', ref(null));
@@ -445,14 +437,6 @@ async function fetchGetRoutes() {
   margin-bottom: 8px;
 }
 
-.container-list {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  justify-content: center;
-  align-items: flex-start;
-  align-content: flex-start;
-}
 .list-header {
   width: 100%;
   font-size: 18px;

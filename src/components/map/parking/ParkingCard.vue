@@ -49,7 +49,8 @@
 
 <script setup>
 // ----- 선언부 ----- //
-import { onMounted, ref, computed, inject } from "vue";
+import { onMounted, onUnmounted, ref, computed, watch, inject} from "vue";
+import { useRouter, useRoute } from "vue-router";
 import * as HttpHandler from '@/common/HttpHandler.js';
 
 const props = defineProps({
@@ -81,6 +82,10 @@ onMounted(() => {
     fetchParkingCategory();
     fetchParkingType();
 });
+
+onUnmounted(() => {
+
+})
 
 // ----- 함수 정의 ----- //
 async function fetchParkingCategory() {
