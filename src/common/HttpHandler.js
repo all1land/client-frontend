@@ -427,39 +427,27 @@ export async function deleteFile(params = {}) {
 }
 
 // ----- 공통코드 API ----- //
-/** 최상위 공통코드 그룹 조회. response.data는 공통코드 배열입니다. */
 export async function listCommonCodeRoots(params = {}) {
   return request('GET', '/common-codes/roots', {
-    params: { includeInactive: params.includeInactive ?? false },
+    params: { includeInactive: params.includeInactive },
   });
 }
 
-/** 그룹의 하위 공통코드 조회 (예: PARKING_CATEGORY, PARKING_TYPE). */
 export async function listCommonCodes(groupCode, params = {}) {
-  if (typeof groupCode !== 'string' || !groupCode.trim()) {
-    throw new Error('공통코드 그룹이 필요합니다.');
-  }
-  return request('GET', `/common-codes/${encodeURIComponent(groupCode.trim())}`, {
-    params: { includeInactive: params.includeInactive ?? false },
+  return request('GET', `/common-codes/${encodeURIComponent(groupCode)}`, {
+    params: { includeInactive: params.includeInactive },
   });
 }
-
 
 // ----- 장소 API ----- //
-
-/**
- * 장소 목록 조회 (페이지네이션)
- * @param {object} params - 쿼리 파라미터
- * @returns {Promise<any>} - 응답 데이터
- */
 export async function listPlaces(params = {}) {
   return request('GET', '/places/list', {
     params: {
       centerLat: params.centerLat,
       centerLon: params.centerLon,
-      pageIndex: params.pageIndex ?? 1,
-      pageSize: params.pageSize ?? 10,
-      keyword: params.keyword ?? '',
+      pageIndex: params.pageIndex,
+      pageSize: params.pageSize,
+      keyword: params.keyword,
       zoom: params.zoom,
       minLat: params.minLat,
       minLon: params.minLon,
@@ -469,94 +457,11 @@ export async function listPlaces(params = {}) {
   });
 }
 
-/**
- * 장소 목록 API 응답을 배열로 정규화
- * @param {any} response - API 응답 객체
- * @returns {object[]} - 장소 배열
- */
-export function normalizePlaceListResponse(response) {
-  const page = response?.data ?? response?.result ?? response;
-  const items = page?.items ?? page?.list ?? page?.contents ?? page?.content;
-  if (!Array.isArray(items)) {
-    throw new Error('Cannot find places array. Check ApiResDTO/CmmListResDTO response field names.');
-  }
-  return items;
-}
-
-export function normalizePlaceSearchResponse(response) {
-  const page = response?.data ?? response?.result ?? response;
-  const items = normalizePlaceListResponse(response);
-  if (!Array.isArray(page?.markers) || !Number.isInteger(page?.pagination?.pageIndex) ||
-      !Number.isInteger(page.pagination.pageNum)) {
-    throw new Error('Invalid place search markers or pagination.');
-  }
-  return { items, markers: page.markers, pagination: page.pagination };
-}
-
-/**
- * API 응답의 장소를 UI 컴포넌트용 형식으로 변환
- * @param {object} apiPlace - API 응답의 장소 객체
- * @returns {object} - 변환된 장소 객체
- */
-export function transformPlaceResponse(apiPlace) {
-  return {
-    ...apiPlace,
-    id: apiPlace.poiId || apiPlace.id,
-    title: apiPlace.name,
-    road_name_address: apiPlace.roadNameAddress,
-    lat: apiPlace.latitude || apiPlace.lat,
-    lng: apiPlace.longitude || apiPlace.lng,
-  };
-}
-
-/**
- * 장소 객체의 좌표를 정규화
- * @param {object} place - 장소 객체
- * @returns {object} - { isValid: boolean, lat: number, lng: number }
- */
-export function normalizePlaceCoordinates(place) {
-  const lat = Number(place?.latitude ?? place?.lat ?? place?.lot);
-  const lng = Number(place?.longitude ?? place?.lng);
-  
-  return {
-    isValid: Number.isFinite(lat) && Number.isFinite(lng) && 
-             lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180,
-    lat,
-    lng,
-  };
-}
-
-/**
- * 장소 객체의 유효성 검사
- * @param {object} place - 장소 객체
- * @returns {boolean}
- */
-export function isValidPlace(place) {
-  if (!place || typeof place !== 'object') return false;
-  if (!place.id && !place.poiId) return false;
-  
-  const { isValid } = normalizePlaceCoordinates(place);
-  return isValid;
-}
-
-/**
- * 장소 상세 조회. response.data는 장소 상세 객체입니다.
- * @param {{ placeId: number|string }} params - 목록 응답의 poiId 또는 선택한 장소의 id
- */
 export async function getDetailPlace(params = {}) {
-  const placeId = params.placeId;
-  if (!/^\d+$/.test(String(placeId)) || /^0+$/.test(String(placeId))) {
-    throw new Error('유효한 장소 ID가 필요합니다.');
-  }
-  return request('GET', `/places/${encodeURIComponent(placeId)}`);
+  return request('GET', `/places/${encodeURIComponent(params.placeId)}`);
 }
 
 // ----- 주차장 조회 ----- //
-/**
- * 주변 주차장 조회. response.data는 주차장 배열입니다.
- * @param {{ latitude: number, longitude: number, radius: number }} params
- * radius는 검색 반경(미터)입니다.
- */
 export async function nearbyParking(params = {}) {
   return request('GET', '/parking-lots/nearby', {
     params: {
@@ -567,23 +472,12 @@ export async function nearbyParking(params = {}) {
   });
 }
 
-/**
- * 주차장 상세 조회. response.data는 주차장 상세 객체입니다.
- * @param {{ parkingLotId: number|string }} params
- */
 export async function detailParking(params = {}) {
-  const parkingLotId = params.parkingLotId;
-  if (!/^\d+$/.test(String(parkingLotId)) || /^0+$/.test(String(parkingLotId))) {
-    throw new Error('유효한 주차장 ID가 필요합니다.');
-  }
-
-  return request('GET', `/parking-lots/${encodeURIComponent(parkingLotId)}`);
+  return request('GET', `/parking-lots/${encodeURIComponent(params.parkingLotId)}`);
 }
 
 // ----- 경로조회 API ----- //
-
 export async function getWalkingRoute(params = {}) {
-  requireRouteApi();
   return request('GET', '/api/routes/walking', {
     params,
     timeout: 10000,
@@ -591,7 +485,6 @@ export async function getWalkingRoute(params = {}) {
 }
 
 export async function getDrivingRoute(params = {}) {
-  requireRouteApi();
   return request('GET', '/api/routes/driving', {
     params,
     timeout: 10000,
@@ -600,29 +493,25 @@ export async function getDrivingRoute(params = {}) {
 
 export async function getRoutes(params = {}) {
   return request('POST', '/routes/all', {
-    body: {
+    body: compact({
       origin: params.origin,
       departurePoi: params.departurePoi,
       parkingId: params.parkingId,
       destination: params.destination,
-    },
+    }),
     timeout: 10000,
   });
 }
 
-/**
- * 최적 주차장 추천. response.data는 추천 주차장 정보입니다.
- * @param {{ origin: {latitude, longitude}, departurePoi: {latitude, longitude}, destination: {latitude, longitude}, radius: number, limit: number }} params
- */
 export async function getParkingRecommendations(params = {}) {
   return request('POST', '/routes/recommendations', {
-    body: {
+    body: compact({
       origin: params.origin,
       departurePoi: params.departurePoi,
       destination: params.destination,
       radius: params.radius,
       limit: params.limit,
-    },
+    }),
     timeout: 10000,
   });
 }
