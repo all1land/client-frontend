@@ -147,6 +147,28 @@ function searchPlaces(value = String(searchText.value ?? '').trim()) {
   void loadPlaces(1);
 }
 
+function normalizePlaceSearchResponse(response) {
+  const page = response?.data ?? response?.result ?? response;
+  const items = page?.items ?? page?.list ?? page?.contents ?? page?.content;
+  const markers = page?.markers ?? items;
+  if (!Array.isArray(items) || !Array.isArray(markers) ||
+      !Number.isInteger(page?.pagination?.pageIndex) || !Number.isInteger(page.pagination.pageNum)) {
+    throw new Error('Invalid place search response.');
+  }
+  return { items, markers, pagination: page.pagination };
+}
+
+function transformPlace(apiPlace) {
+  return {
+    ...apiPlace,
+    id: apiPlace.poiId || apiPlace.id,
+    title: apiPlace.name,
+    road_name_address: apiPlace.roadNameAddress,
+    lat: apiPlace.latitude || apiPlace.lat,
+    lng: apiPlace.longitude || apiPlace.lng,
+  };
+}
+
 async function loadPlaces(nextPage) {
   if (!viewport) return;
   clearTimeout(refreshTimer);
@@ -160,11 +182,11 @@ async function loadPlaces(nextPage) {
     });
     if (currentRequest !== requestId) return;
 
-    const { items, markers, pagination } = HttpHandler.normalizePlaceSearchResponse(response);
+    const { items, markers, pagination } = normalizePlaceSearchResponse(response);
     if (pagination.pageNum > 0 && nextPage > pagination.pageNum) {
       return await loadPlaces(pagination.pageNum);
     }
-    places.value = items.map(HttpHandler.transformPlaceResponse);
+    places.value = items.map(transformPlace);
     pageIndex.value = pagination.pageNum > 0 ? pagination.pageIndex : 1;
     pageCount.value = pagination.pageNum;
     if (resultList.value?.$el) resultList.value.$el.scrollTop = 0;

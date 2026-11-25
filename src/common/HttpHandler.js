@@ -429,13 +429,13 @@ export async function deleteFile(params = {}) {
 // ----- 공통코드 API ----- //
 export async function listCommonCodeRoots(params = {}) {
   return request('GET', '/common-codes/roots', {
-    params: { includeInactive: params.includeInactive },
+    params: { includeInactive: params.includeInactive ?? false },
   });
 }
 
 export async function listCommonCodes(groupCode, params = {}) {
   return request('GET', `/common-codes/${encodeURIComponent(groupCode)}`, {
-    params: { includeInactive: params.includeInactive },
+    params: { includeInactive: params.includeInactive ?? false },
   });
 }
 
@@ -445,9 +445,9 @@ export async function listPlaces(params = {}) {
     params: {
       centerLat: params.centerLat,
       centerLon: params.centerLon,
-      pageIndex: params.pageIndex,
-      pageSize: params.pageSize,
-      keyword: params.keyword,
+      pageIndex: params.pageIndex ?? 1,
+      pageSize: params.pageSize ?? 10,
+      keyword: params.keyword ?? '',
       zoom: params.zoom,
       minLat: params.minLat,
       minLon: params.minLon,
