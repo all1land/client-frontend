@@ -77,6 +77,7 @@ import { onMounted, onUnmounted, ref, shallowRef, provide, watch, inject } from 
 import { useRoute } from "vue-router";
 import { mapMeta, MAP_TYPE } from "@/common/MapMeta.js";
 import { drawMapMarker, removeMapMarker, clearMapMarkers } from '@/common/MapMarker.js';
+import { createPlaceClusters } from '@/common/PlaceClusters.js';
 import { createMapRoute } from '@/common/MapRoute.js';
 
 import { fromLonLat, toLonLat, } from "ol/proj";
@@ -124,6 +125,7 @@ const currentMapType = ref(MAP_TYPE.BASIC);
 
 let map = null;
 let baseTileLayer = null;
+let placeClusters = null;
 let routeDraw = null;
 let pendingRoute = null;
 const mapRouteError = ref('');
@@ -139,6 +141,7 @@ let drawnMarkers = new Map();
 const focusedMarkerId = ref(null);
 
 watch(() => route.path, () => sidePanel.value?.closeDetail());
+watch([mapInstance, mapMarkers], syncPlaceClusters);
 watch([mapInstance, mapMarkers, currentLocation, focusedMarkerId], syncMarkers);
 
 // ----- 라이프 사이클 ----- //
@@ -153,6 +156,8 @@ onUnmounted(() => {
   locationRequestId++;
   routeDraw?.destroy();
   routeDraw = null;
+  placeClusters?.destroy();
+  placeClusters = null;
   pendingRoute = null;
   mapInstance.value = null;
   if (map) {
@@ -193,12 +198,19 @@ function setMapMarkers(markers = []) {
   if (!markers.some((marker) => marker.id === focusedMarkerId.value)) focusedMarkerId.value = null;
 }
 
+function syncPlaceClusters() {
+  placeClusters?.setMarkers(mapMarkers.value.filter((marker) =>
+    marker.type === 'cus-location-mark' && isValidMarkerCoordinate(marker.lat, marker.lng),
+  ));
+}
+
 function syncMarkers() {
   if (!map) return;
   const next = new Map();
 
   for (const marker of mapMarkers.value) {
     if (!isValidMarkerCoordinate(marker.lat, marker.lng)) continue;
+    if (marker.type === 'cus-location-mark' && marker.id !== focusedMarkerId.value) continue;
     const type = marker.id === focusedMarkerId.value
       ? marker.type.replace(/-mark$/, '-spotlight')
       : marker.type;
@@ -275,6 +287,8 @@ function initMap() {
     }),
   });
 
+  placeClusters = createPlaceClusters(map);
+
   const view = map.getView();
   minZoom.value = view.getMinZoom();
   maxZoom.value = view.getMaxZoom();
@@ -311,21 +325,54 @@ function focusMapLocation(location, markerKind) {
   view.cancelAnimations();
   view.animate({
     center: fromLonLat([lng, lat], view.getProjection()),
-    zoom: Math.min(view.getMaxZoom(), Math.max(view.getMinZoom(), DEFAULT_ZOOM)),
+    zoom: Math.min(view.getMaxZoom(), Math.max(
+      view.getMinZoom(),
+      markerKind === 'location' ? view.getZoom() ?? DEFAULT_ZOOM : DEFAULT_ZOOM,
+      DEFAULT_ZOOM,
+    )),
     duration: 600,
   });
   return true;
 }
 
 function handleMarkerClick(event) {
-  const feature = map.forEachFeatureAtPixel(event.pixel, (item) => {
-    if (/^cus-(location|parking)-(mark|spotlight)$/.test(item.get('type'))) return item;
+  const feature = map.forEachFeatureAtPixel(event.pixel, (item, layer) => {
+    if (layer === placeClusters?.layer ||
+        /^cus-(location|parking)-(mark|spotlight)$/.test(item.get('type'))) return item;
   }, { hitTolerance: 5 });
   if (!feature) return;
-  const kind = feature.get('type').startsWith('cus-location-') ? 'location' : 'parking';
+
+  const members = feature.get('features');
+  if (members?.length) {
+    const view = map.getView();
+    const zoom = view.getZoom() ?? DEFAULT_ZOOM;
+    if (members.length > 1 && zoom < view.getMaxZoom() - 0.01) {
+      focusedMarkerId.value = null;
+      view.cancelAnimations();
+      view.animate({
+        center: feature.getGeometry().getCoordinates(),
+        zoom: Math.min(view.getMaxZoom(), zoom + 2),
+        duration: 300,
+      });
+      return;
+    }
+
+    // Overlapping points may still share a cluster at the maximum zoom.
+    const representative = members.reduce((first, member) =>
+      member.get('marker').id < first.get('marker').id ? member : first,
+    ).get('marker');
+    openPlaceMarker(representative.data);
+    return;
+  }
+
   const data = feature.get('data');
-  focusMapLocation(data, kind);
-  if (kind === 'location') onShowDetail({ id: data?.id, kind: 'place' });
+  if (feature.get('type').startsWith('cus-location-')) openPlaceMarker(data);
+  else focusMapLocation(data, 'parking');
+}
+
+function openPlaceMarker(data) {
+  focusMapLocation(data, 'location');
+  onShowDetail({ id: data?.id, kind: 'place' });
 }
 
 function locateCurrentPosition() {
