@@ -483,6 +483,16 @@ export function normalizePlaceListResponse(response) {
   return items;
 }
 
+export function normalizePlaceSearchResponse(response) {
+  const page = response?.data ?? response?.result ?? response;
+  const items = normalizePlaceListResponse(response);
+  if (!Array.isArray(page?.markers) || !Number.isInteger(page?.pagination?.pageIndex) ||
+      !Number.isInteger(page.pagination.pageNum)) {
+    throw new Error('Invalid place search markers or pagination.');
+  }
+  return { items, markers: page.markers, pagination: page.pagination };
+}
+
 /**
  * API 응답의 장소를 UI 컴포넌트용 형식으로 변환
  * @param {object} apiPlace - API 응답의 장소 객체

@@ -76,12 +76,12 @@
 import { onMounted, onUnmounted, ref, shallowRef, provide, watch, inject } from "vue";
 import { useRoute } from "vue-router";
 import { mapMeta, MAP_TYPE } from "@/common/MapMeta.js";
-import { drawMapMarker, clearMapMarkers } from '@/common/MapMarker.js';
+import { drawMapMarker, removeMapMarker, clearMapMarkers } from '@/common/MapMarker.js';
 import { createMapRoute } from '@/common/MapRoute.js';
 
 import { fromLonLat, toLonLat, } from "ol/proj";
 import { defaults as defaultControls, Attribution, ScaleLine } from "ol/control";
-import Map from "ol/Map";
+import OpenLayersMap from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import XYZ from "ol/source/XYZ";
@@ -134,12 +134,12 @@ const mapInstance = shallowRef(null);
 provide('parkingMap', mapInstance);
 provide('focusMapLocation', focusMapLocation);
 
-const mapMarkers = ref([]);
+const mapMarkers = shallowRef([]);
+let drawnMarkers = new Map();
 const focusedMarkerId = ref(null);
 
 watch(() => route.path, () => sidePanel.value?.closeDetail());
-watch(mapInstance, () => drawMarkers());
-watch([mapMarkers, currentLocation, focusedMarkerId], () => drawMarkers(), { deep: true });
+watch([mapInstance, mapMarkers, currentLocation, focusedMarkerId], syncMarkers);
 
 // ----- 라이프 사이클 ----- //
 onMounted(() => {
@@ -157,6 +157,7 @@ onUnmounted(() => {
   mapInstance.value = null;
   if (map) {
     clearMapMarkers(map);
+    drawnMarkers.clear();
     map.setTarget(undefined);
     map = null;
   }
@@ -192,23 +193,49 @@ function setMapMarkers(markers = []) {
   if (!markers.some((marker) => marker.id === focusedMarkerId.value)) focusedMarkerId.value = null;
 }
 
-function drawMarkers() {
+function syncMarkers() {
   if (!map) return;
-  clearMapMarkers(map);
+  const next = new Map();
+
   for (const marker of mapMarkers.value) {
-    if (!Number.isFinite(marker.lat) || !Number.isFinite(marker.lng) ||
-        marker.lat < -90 || marker.lat > 90 || marker.lng < -180 || marker.lng > 180) continue;
+    if (!isValidMarkerCoordinate(marker.lat, marker.lng)) continue;
     const type = marker.id === focusedMarkerId.value
       ? marker.type.replace(/-mark$/, '-spotlight')
       : marker.type;
-    drawMapMarker(map, { ...marker, type });
+    next.set(marker.id, type === marker.type ? marker : { ...marker, type });
   }
+
   const location = currentLocation.value;
-  if (Number.isFinite(location?.latitude) && Number.isFinite(location?.longitude) &&
-      Math.abs(location.latitude) <= 90 && Math.abs(location.longitude) <= 180) {
-    drawMapMarker(map, { id: 'current-location', lat: location.latitude, lng: location.longitude,
-      type: 'cus-me-mark', data: location });
+  if (isValidMarkerCoordinate(location?.latitude, location?.longitude)) {
+    next.set('current-location', {
+      id: 'current-location', lat: location.latitude, lng: location.longitude,
+      type: 'cus-me-mark', data: location,
+    });
   }
+
+  for (const id of drawnMarkers.keys()) {
+    if (!next.has(id)) removeMapMarker(map, id);
+  }
+  for (const [id, marker] of next) {
+    if (!isSameMarker(drawnMarkers.get(id), marker)) drawMapMarker(map, marker);
+  }
+  drawnMarkers = next;
+}
+
+function isValidMarkerCoordinate(lat, lng) {
+  return Number.isFinite(lat) && Number.isFinite(lng) &&
+    Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+}
+
+function isSameMarker(previous, marker) {
+  if (!previous || previous.lat !== marker.lat || previous.lng !== marker.lng ||
+      previous.type !== marker.type) return false;
+
+  if (marker.type.startsWith('cus-location-')) {
+    return previous.data?.id === marker.data?.id &&
+      previous.data?.categoryCode === marker.data?.categoryCode;
+  }
+  return previous.data === marker.data;
 }
 
 function initMap() {
@@ -225,7 +252,7 @@ function initMap() {
     source: createTileSource(tileSource),
   });
 
-  map = new Map({
+  map = new OpenLayersMap({
     target: mapElement.value,
 
     layers: [
@@ -296,7 +323,9 @@ function handleMarkerClick(event) {
   }, { hitTolerance: 5 });
   if (!feature) return;
   const kind = feature.get('type').startsWith('cus-location-') ? 'location' : 'parking';
-  focusMapLocation(feature.get('data'), kind);
+  const data = feature.get('data');
+  focusMapLocation(data, kind);
+  if (kind === 'location') onShowDetail({ id: data?.id, kind: 'place' });
 }
 
 function locateCurrentPosition() {

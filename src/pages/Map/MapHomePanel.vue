@@ -9,7 +9,8 @@
       bg-color="#ffffff" base-color="#8AB63F" color="#8AB63F"
       hide-details clearable
       placeholder="장소 검색"
-      @keydown.enter.prevent="handleEvent('search')"
+      @keydown.enter.prevent="searchPlaces()"
+      @click:clear="searchPlaces('')"
     />
   </v-row>
 
@@ -17,212 +18,177 @@
     <v-col cols="12" class="list-header">{{ searched ? '검색 결과' : '주변' }}</v-col>
   </v-row>
 
-  <v-row no-gutters class="container-list">  
+  <v-row ref="resultList" no-gutters class="container-list">
     <v-col v-for="place in places" :key="place.id" cols="12">
       <PlaceCard
         :place="place"
-        @select="handleEvent('select', $event)"
-        @click="handleEvent('detail', $event)"
+        @select="selectDestination"
+        @click="showDetail"
       />
     </v-col>
-    <v-col v-if="(searched || fetchFailed) && !places.length" class="pa-3" cols="12">
+    <v-col v-if="errorMessage" class="pa-3" cols="12" role="alert">
+      {{ errorMessage }}
+    </v-col>
+    <v-col v-else-if="!loading && !places.length" class="pa-3" cols="12">
       현재 지도 영역에 검색 결과가 없습니다.
     </v-col>
   </v-row>
+
+  <div v-if="pageCount > 1" class="place-pagination">
+    <v-pagination
+      :model-value="pageIndex"
+      :length="pageCount"
+      :total-visible="7"
+      :disabled="loading"
+      size="small"
+      density="compact"
+      aria-label="장소 검색 결과 페이지"
+      @update:model-value="loadPlaces"
+    />
+  </div>
+
 </template>
 
 <script setup>
-// ----- 선언부 ----- //
-import { onMounted, onUnmounted, ref, computed, watch, inject } from "vue";
-import { toLonLat, transformExtent } from "ol/proj";
-import { useRouter, useRoute } from "vue-router";
-import { routes } from "@/router"
-
+import { onUnmounted, ref, watch, inject } from 'vue';
+import { toLonLat, transformExtent } from 'ol/proj';
+import { useRouter } from 'vue-router';
 import * as HttpHandler from '@/common/HttpHandler.js';
 import { searchHistory } from '@/common/MapHistory.js';
-import { createPlaceViewportCache } from '@/common/PlaceViewportCache.js';
 import Util from '@/common/Util.js';
 import PlaceCard from '@/components/map/place/PlaceCard.vue';
 
 const emit = defineEmits(['update-map-markers', 'show-detail', 'close-detail']);
-
 const router = useRouter();
 const util = Util.getInstance();
+const mapInstance = inject('parkingMap', ref(null));
+const pageSize = 10;
 
 const keyword = ref(null);
 const searchText = ref('');
-const historyItems = ref([]);
 const places = ref([]);
-const destination = ref(null);
+const resultList = ref(null);
 const searched = ref(false);
 const loading = ref(false);
 const errorMessage = ref('');
-const fetchFailed = ref(false);
-const totalCnt = ref(0);
-const mapInstance = inject('parkingMap', ref(null));
+const pageIndex = ref(1);
+const pageCount = ref(0);
 
 let attachedMap = null;
-let requestId = 0;
 let appliedKeyword = '';
-let placeController = null;
+let viewport = null;
+let refreshTimer;
+let requestId = 0;
 
 watch(mapInstance, (nextMap) => {
-  if (placeController) {
-    placeController.destroy();
-    placeController = null;
-  }
-  
-  attachedMap?.un('moveend', refreshPlaces);
-  attachedMap?.un('change:size', refreshPlaces);
+  detachMap();
   attachedMap = nextMap;
-  
   if (!attachedMap) return;
-  
-  // Initialize viewport cache controller
-  placeController = createPlaceViewportCache({
-    fetchPage: async (params) => {
-      const response = await HttpHandler.listPlaces(params);
-      const items = HttpHandler.normalizePlaceListResponse(response);
-      return items;
-    },
-    onChange: (visiblePlaces, meta) => {
-      places.value = visiblePlaces.map(HttpHandler.transformPlaceResponse);
-      totalCnt.value = visiblePlaces.length;
-      fetchFailed.value = !!meta.error;
-    },
-    cacheScale: 1.5,
-    offscreenTtlMs: 15_000,
-    cacheTtlMs: 60_000,
-    maxVisible: 20,
-    maxOffscreen: 5,
-    pageSize: 10,
-    maxPages: 5,
-    debounceMs: 300,
-  });
-  
-  attachedMap.on('moveend', refreshPlaces);
-  attachedMap.on('change:size', refreshPlaces);
-  refreshPlaces();
+  attachedMap.on('moveend', refreshViewport);
+  attachedMap.on('change:size', refreshViewport);
+  refreshViewport();
 }, { immediate: true });
 
-// 현재 목록에 표시된 장소를 MapView의 공통 마커 레이어에 반영합니다.
-watch(places, (items) => {
-  const markers = [];
-  for (const place of items) {
-    const coord = util.getPlaceCoordinate(place);
-    if (!coord) continue;
-
-    markers.push({
-      id: `location-${place.id}`,
-      lat: coord.lat,
-      lng: coord.lng,
-      type: 'cus-location-mark',
-      data: place,
-    });
-  }
-  emit('update-map-markers', markers);
-}, { deep: true, immediate: true });
-
-// ----- 라이프 사이클 ----- //
-onMounted(async () => {
-  updateHistory();
+onUnmounted(() => {
+  detachMap();
+  emit('update-map-markers', []);
 });
 
-onUnmounted(() => {
-  requestId += 1;
-  if (placeController) {
-    placeController.destroy();
-    placeController = null;
-  }
-  attachedMap?.un('moveend', refreshPlaces);
-  attachedMap?.un('change:size', refreshPlaces);
-  emit('update-map-markers', []);
-})
-
-// ----- 함수 정의 ----- //
-function updateHistory() {
-  historyItems.value = searchHistory.getAll().map((item) => item.keyword);
+function detachMap() {
+  requestId++;
+  clearTimeout(refreshTimer);
+  attachedMap?.un('moveend', refreshViewport);
+  attachedMap?.un('change:size', refreshViewport);
+  attachedMap = null;
+  viewport = null;
 }
 
-// 버튼 클릭 이벤트 핸들러
-async function handleEvent(action, payload) {
-  console.log('handleEvent triggered with action:', action, 'and payload:', payload);
-  switch (action) {
-    case 'search':
-      if (loading.value) return;
-      const value = String(searchText.value || keyword.value || '').trim();
-      destination.value = null;
-      errorMessage.value = '';
-      searched.value = true;
-      keyword.value = value;
-      appliedKeyword = value;
-      if (value) {
-        searchHistory.add({ key: value, keyword: value });
-        updateHistory();
-      }
-      if (placeController) {
-        placeController.invalidate();
-        await placeController.refresh();
-      }
-      // 검색 결과가 한 곳이면 목적지로 바로 연결합니다.
-      if (value && places.value.length === 1) selectDestination(places.value[0]);
-      break;
-
-    case 'select':
-      selectDestination(payload);
-      break;
-
-    case 'detail':
-      if (payload?.id != null) {
-        emit('show-detail', {
-          id: payload.id,
-          kind: 'place',
-        });
-      }
-      break;
-
-    case 'clear':
-      searchText.value = '';
-      keyword.value = '';
-      appliedKeyword = '';
-      searched.value = false;
-      if (placeController) {
-        placeController.invalidate();
-        await placeController.refresh();
-      }
-      break;
-      
-    default:
-      console.error('알 수 없는 인증 액션 타입:', action);
-  }
-}
-
-function refreshPlaces() {
-  if (!placeController || !attachedMap) return;
-  
+function refreshViewport() {
   const size = attachedMap.getSize();
   if (!size || size[0] <= 0 || size[1] <= 0) return;
 
   const view = attachedMap.getView();
   const center = view.getCenter();
   if (!center) return;
-  
-  const projection = view.getProjection();
-  const [centerLon, centerLat] = toLonLat(center, projection);
-  const [west, south, east, north] = transformExtent(view.calculateExtent(size), projection, 'EPSG:4326');
-  
-  const minLon = Math.max(-180, west);
-  const minLat = Math.max(-90, south);
-  const maxLon = Math.min(180, east);
-  const maxLat = Math.min(90, north);
-  
-  if (![minLon, minLat, maxLon, maxLat].every(Number.isFinite) || minLon >= maxLon || minLat >= maxLat) return;
 
-  const zoomLevel = Math.max(0, Math.round(view.getZoom() ?? 0));
-  placeController.update(
-    { minLat, minLon, maxLat, maxLon },
-    { search: appliedKeyword, level: zoomLevel }
-  );
+  const projection = view.getProjection();
+  const [west, south, east, north] = transformExtent(view.calculateExtent(size), projection, 'EPSG:4326');
+  const bounds = {
+    minLon: Math.max(-180, west),
+    minLat: Math.max(-90, south),
+    maxLon: Math.min(180, east),
+    maxLat: Math.min(90, north),
+  };
+  if (!Object.values(bounds).every(Number.isFinite) ||
+      bounds.minLon >= bounds.maxLon || bounds.minLat >= bounds.maxLat) return;
+  if (viewport && Object.keys(bounds).every((key) => viewport[key] === bounds[key])) return;
+
+  const [centerLon, centerLat] = toLonLat(center, projection);
+  const zoom = Math.max(0, Math.round(view.getZoom() ?? 0));
+  viewport = { ...bounds, centerLat, centerLon, zoom };
+  requestId++;
+  loading.value = true;
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(() => { void loadPlaces(1); }, 300);
+}
+
+function searchPlaces(value = String(searchText.value ?? '').trim()) {
+  appliedKeyword = value;
+  keyword.value = value;
+  searchText.value = value;
+  searched.value = Boolean(value);
+  if (value) searchHistory.add({ key: value, keyword: value });
+
+  places.value = [];
+  pageIndex.value = 1;
+  pageCount.value = 0;
+  emit('close-detail');
+  emit('update-map-markers', []);
+  void loadPlaces(1);
+}
+
+async function loadPlaces(nextPage) {
+  if (!viewport) return;
+  clearTimeout(refreshTimer);
+  const currentRequest = ++requestId;
+  loading.value = true;
+  errorMessage.value = '';
+
+  try {
+    const response = await HttpHandler.listPlaces({
+      ...viewport, keyword: appliedKeyword, pageIndex: nextPage, pageSize,
+    });
+    if (currentRequest !== requestId) return;
+
+    const { items, markers, pagination } = HttpHandler.normalizePlaceSearchResponse(response);
+    if (pagination.pageNum > 0 && nextPage > pagination.pageNum) {
+      return await loadPlaces(pagination.pageNum);
+    }
+    places.value = items.map(HttpHandler.transformPlaceResponse);
+    pageIndex.value = pagination.pageNum > 0 ? pagination.pageIndex : 1;
+    pageCount.value = pagination.pageNum;
+    if (resultList.value?.$el) resultList.value.$el.scrollTop = 0;
+    emit('update-map-markers', markers.flatMap((item) => {
+      const id = String(item?.poiId ?? item?.id ?? '');
+      const coord = util.getPlaceCoordinate(item);
+      return id && coord ? [{
+        id: `location-${id}`,
+        ...coord,
+        type: 'cus-location-mark',
+        data: { id, ...coord, categoryCode: item.categoryCode },
+      }] : [];
+    }));
+  } catch (error) {
+    if (currentRequest !== requestId) return;
+    errorMessage.value = '장소 검색 결과를 불러오지 못했습니다.';
+    console.error('장소 검색 실패:', error);
+  } finally {
+    if (currentRequest === requestId) loading.value = false;
+  }
+}
+
+function showDetail(place) {
+  if (place?.id != null) emit('show-detail', { id: place.id, kind: 'place' });
 }
 
 function selectDestination(place) {
@@ -231,16 +197,13 @@ function selectDestination(place) {
     errorMessage.value = '선택한 장소에 좌표가 없습니다.';
     return;
   }
-  
-  const { lat, lng } = coord;
+
   errorMessage.value = '';
-  destination.value = { id: place.id, name: util.getPlaceName(place), lat, lng };
-  
   try {
-    localStorage.setItem('route-search', JSON.stringify({ lat, lng, name: destination.value.name }));
+    localStorage.setItem('route-search', JSON.stringify({ ...coord, name: util.getPlaceName(place) }));
   } catch (error) {
-    console.error('도착지 저장 실패:', error);
-    errorMessage.value = '도착지를 저장하지 못했습니다. 브라우저 저장소 설정을 확인하세요.';
+    console.error('목적지 저장 실패:', error);
+    errorMessage.value = '목적지를 저장하지 못했습니다. 브라우저 설정을 확인해 주세요.';
     return;
   }
   router.push('/map/directions');
@@ -277,6 +240,11 @@ function selectDestination(place) {
   width: 100%;
   margin: 0;
   overflow-y: auto;
+}
+
+.place-pagination {
+  width: 100%;
+  padding: 8px 0;
 }
 
 .list-header {
